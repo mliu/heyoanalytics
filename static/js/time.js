@@ -45,7 +45,7 @@ window.fbAsyncInit = function() {
 var Request = {
   //Retrieves all posts from pages with a certain keyword
   //Appends array of tuples of posts under key
-  pullFromCategory: function(key){
+  pullByKeyword: function(key){
     if(Request.indexOf(key) !== -1){
       return Request[key];
     }
@@ -63,7 +63,7 @@ var Request = {
 
   //Retrieves all posts and their reception info for a page
   //Returns array of tuples with data of every post
-  pullFromPage: function(id){
+  pullByID: function(id){
     if(Request.indexOf(id) !== -1){
       return Request[id];
     }
@@ -115,6 +115,12 @@ var Request = {
     }
   }
 };
+  
+//event listener for pages
+$(document).on('click', '.page', function(){
+  var id = this.id.replace('page', '');
+  UI.getPageData(id, {});
+});
 
 var UI = {
   
@@ -124,7 +130,7 @@ var UI = {
       console.log('No pages !');
     }
     for (p in pages) {
-      var html = '<tr id="page'+ pages[p].id +'" >' +
+      var html = '<tr id="page'+ pages[p].id +'" class="page" >' +
                     '<td>' + pages[p].name + '</td>' + 
                     '<td>' + pages[p].id + '</td>' +
                     '<td>No more data</td>' +
@@ -132,6 +138,10 @@ var UI = {
       $('#pageBody').append(html);
     }
     return pages;
+  },
+  
+  getPageData: function(id, options){
+    options = options || {};
   }
   
 };
