@@ -6,8 +6,7 @@
 
 var Settings = {
     host:'localhost',
-    port:8080,
-    appId:242671659190590
+    appId:716812544998433
 };
 
 try{

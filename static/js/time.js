@@ -1,6 +1,5 @@
 console.log('JS loaded.');
 window.fbAsyncInit = function() {
-  var data = [];
   // init the FB JS SDK
   FB.init({
     appId      : Settings.appId,                        // App ID from the app dashboard
@@ -43,60 +42,79 @@ window.fbAsyncInit = function() {
    fjs.parentNode.insertBefore(js, fjs);
  }(document, 'script', 'facebook-jssdk'));
 
-
-function checkLoggedIn(response){
-  if(response.status == 'connected'){
-    return true;
-  }
-  else{
-    return false;
-  }
-}
-
-//Retrieves all posts and their reception info for a page
-function pullData(id){
-  //variables
-  days = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday'
-  ]
-  var reception = 0, post;
-  //FQL query for getting all posts and specific fields
-  FB.api('/'+ id + '/posts?fields=created_time,likes,comments,message', function(res){
-    for(post in arr){
-      // if(obj.hasOwnProperty(post)){
-      //Create temp object
-      var temp = {};
-      //Parse created_time string to get day of week and time
-      var s = post["created_time"];
-      var d = days[new Date(s).getDay()];
-      temp["time"] = s.slice(11,18);
-      temp["day"] = d;
-      //Add post message
-      if(post.inedexOf("message") !== -1){
-        temp["message"] = post["message"];
-      }
-      //If comments exist, count and add
-      if(post.indexOf("comments") !== -1){
-        temp["comments_count"] = post["comments"]["data"].length;
-      }
-      //If likes exist, count and add
-      if(post.indexOf("likes") !== -1){
-        temp["likes_count"] = post["likes"]["data"].length;
-      }
-      //If shares exist, add total
-      if(post.indexOf("shares") !== -1){
-        temp["shares_count"] = post["shares"]["count"];
-      }
-      //Push completed object for that specific post onto data array
-      data.push(temp);
+var Request = {
+  //Retrieves all posts from pages with a certain keyword
+  //Appends array of tuples of posts under key
+  pullFromCategory: function(key){
+    if(Request.indexOf(key) !== -1){
+      return Request[key];
     }
-  });
+    else{
+      FB.api('/search?q=' + key + '&type=page', function(res){
+        var data = [];
+        for(page in res.data){
+          pullReceptionData(page.id)
+          data.concat(Request.pullFromPage(page.id));
+        }
+        Request[key] = data;
+      });
+    }
+  };
+
+  //Retrieves all posts and their reception info for a page
+  //Returns array of tuples with data of every post
+  pullFromPage: function(id){
+    if(Request.indexOf(id) !== -1){
+      return Request[id];
+    }
+    else{
+      var data = [];
+      //variables
+      days = [
+        'Sunday',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday'
+      ]
+      var reception = 0, post;
+      //FQL query for getting all posts and specific fields
+      FB.api('/'+ id + '/posts?fields=created_time,likes,comments,message', function(res){
+        for(post in res.data){
+          // if(obj.hasOwnProperty(post)){
+          //Create temp object
+          var temp = {};
+          //Parse created_time string to get day of week and time
+          var s = post["created_time"];
+          var d = days[new Date(s).getDay()];
+          temp["time"] = s.slice(11,18);
+          temp["day"] = d;
+          //Add post message
+          if(post.indexOf("message") !== -1){
+            temp["message"] = post["message"];
+          }
+          //If comments exist, count and add
+          if(post.indexOf("comments") !== -1){
+            temp["comments_count"] = post["comments"]["data"].length;
+          }
+          //If likes exist, count and add
+          if(post.indexOf("likes") !== -1){
+            temp["likes_count"] = post["likes"]["data"].length;
+          }
+          //If shares exist, add total
+          if(post.indexOf("shares") !== -1){
+            temp["shares_count"] = post["shares"]["count"];
+          }
+          //Push completed object for that specific post onto data array
+          data.push(temp);
+        }
+        Request[id] = data;
+      });
+    }
+  }
+};
 
 var UI = {
   
