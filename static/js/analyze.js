@@ -148,7 +148,11 @@ var UI = {
       $('#pageBody').append(html);
     }
     return pages;
-  },
+  }  
+  
+};
+Data = {
+  stopWords:[],
   /*
     Finds popular words for given FB response data.
   */
@@ -173,6 +177,4 @@ var UI = {
       console.log(i);
     }
   }
-  
-  
-};
+}
