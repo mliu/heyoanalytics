@@ -37,7 +37,8 @@ window.fbAsyncInit = function() {
    fjs.parentNode.insertBefore(js, fjs);
  }(document, 'script', 'facebook-jssdk'));
 
-function checkLoggedIn(function(response){
+
+function checkLoggedIn(response){
   if(response.status == 'connected'){
     return true;
   }
@@ -45,8 +46,6 @@ function checkLoggedIn(function(response){
     return false;
   }
 }
-
-function display()
 
 //Retrieves all posts and their reception info for a page
 function pullData(id){
@@ -93,8 +92,6 @@ function pullData(id){
     }
   }
 }
-
-
 
 Object.size = function(obj){
   var size = 0, key;
