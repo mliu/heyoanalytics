@@ -119,13 +119,13 @@ var Request = {
       });
     }
     return Request.IDs[id];
-  }
+  }//end pullbyid
 };
   
 //event listener for pages
 $(document).on('click', '.page', function(){
   var id = this.id.replace('page', '');
-  UI.getPageData(id, {});
+  Request.pullByID(id);
 });
 
 var UI = {
@@ -146,8 +146,5 @@ var UI = {
     return pages;
   },
   
-  getPageData: function(id, options){
-    options = options || {};
-  }
   
 };

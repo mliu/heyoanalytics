@@ -1,6 +1,6 @@
 
 /*
-    
+    load FB sdk async
 */
 
 window.fbAsyncInit = function() {

@@ -21,6 +21,20 @@
   left:0;
 }
 
+.abs{position: absolute;}
+.level1{z-index: 1;}
+.level2{z-index: 2;}
+.level3{z-index: 3;}
+.level4{z-index: 4;}
+
+.page{
+  background: #f2f2f2;
+}
+.page:hover{
+  background: #d2d2d2;
+  cursor: pointer;
+}
+
 body{
   font:1em Helvetica,arial,sans-serif;
   font-family:Helvetica,arial,sans-serif;
