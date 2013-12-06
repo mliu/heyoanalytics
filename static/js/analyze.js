@@ -124,8 +124,12 @@ var Request = {
   
 //event listener for pages
 $(document).on('click', '.page', function(){
+  var days = parseInt($('#days').val());
+  days = days || 365;
   var id = this.id.replace('page', '');
-  Request.pullByID(id);
+  var since = Math.floor((new Date().getTime() - 1000*60*60*24*days)/1000);
+  
+  Request.pullByID(id, '&since='+since);
 });
 
 var UI = {
@@ -145,6 +149,30 @@ var UI = {
     }
     return pages;
   },
+  /*
+    Finds popular words for given FB response data.
+  */
+  findKeys:function(data){
+    var mKeys = [];
+    var cKeys = [];
+    console.log('find keys data', data);
+    for (post in data) {
+      if (!data[post].message) continue; 
+      var keys = data[post].message.split(' '); //add all words to array
+      for (k in keys) {
+        if (mKeys[keys[k]]){
+          mKeys[keys[k]]++
+        }else{
+          mKeys[keys[k]] = 1;
+        }
+      }
+    }
+    mKeys.sort();
+    console.log('Most popular words in order are :');
+    for (i in mKeys) {
+      console.log(i);
+    }
+  }
   
   
 };
