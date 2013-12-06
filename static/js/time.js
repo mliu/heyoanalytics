@@ -59,7 +59,7 @@ var Request = {
         Request[key] = data;
       });
     }
-  };
+  },
 
   //Retrieves all posts and their reception info for a page
   //Returns array of tuples with data of every post
