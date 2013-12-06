@@ -10,7 +10,6 @@ window.fbAsyncInit = function() {
 
   FB.Event.subscribe('auth.authResponseChange', function(response) {
     if (response.status === 'connected') {
-      testAPI();
     } else if (response.status === 'not_authorized') {
       FB.login({scope:'manage_pages, publish_stream'});
     } else {
@@ -24,7 +23,7 @@ window.fbAsyncInit = function() {
       //Get Pages, have user choose which one to analyze
       FB.api('/me/accounts?fields=name,id', function(res){
         console.log('got FB.api(/me) response , ', res);
-        listPages.apply(undefined, res);
+        UI.addPages(res.data);
       });
     }
     else{
@@ -99,14 +98,7 @@ function pullData(id){
     }
   }
 
-Object.size = function(obj){
-  var size = 0, key;
-  for(key in obj){
-    if(obj.hasOwnProperty(key)) size++;
-  }
-  return size;
-}
-
+/*
 function listPages(name, id){
   var list = document.getElementById('list');
   var a = document.createElement("a");
@@ -118,3 +110,23 @@ function listPages(name, id){
     pullData(id);
   }
 }
+*/
+var UI = {
+  
+  //adds pages to page from FB api 
+  addPages: function(pages){
+    if (!pages) {
+      console.log('No pages !');
+    }
+    for (p in pages) {
+      var html = '<tr id="page'+ pages[p].id +'" >' +
+                    '<td>' + pages[p].name + '</td>' + 
+                    '<td>' + pages[p].id + '</td>' +
+                    '<td>No more data</td>' +
+                  '</tr>';
+      $('#pageBody').append(html);
+    }
+    return pages;
+  }
+  
+};
