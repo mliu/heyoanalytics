@@ -45,6 +45,10 @@ window.fbAsyncInit = function() {
 var Request = {
   keys : [],
   IDs : [],
+
+  getTrending: function(key){
+    
+  },
   //Retrieves all posts from pages with a certain keyword
   //Appends array of tuples of posts under key
   pullByKeyword: function(key){
