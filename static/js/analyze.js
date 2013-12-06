@@ -65,59 +65,20 @@ var Request = {
 
   //Retrieves all posts and their reception info for a page
   //Returns array of tuples with data of every post
-  pullByID: function(id){
-    if(Request.IDs.indexOf(id) !== -1){
-      return Request.IDs[id];
-    }
-    else{
-      //variables
-      days = [
-        'Sunday',
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday'
-      ]
+  pullByID: function(id, params){
+    if(Request.IDs.indexOf(id) !== -1) return Request.IDs[id];
+    params = params || '';
       var reception = 0, post;
       FB.api('/' + id, function(res){
         Request.IDs[id] = {};
         Request.IDs[id]["likes"] = res.likes;
       });
+      var url = '/'+ id + '/posts?fields=created_time,likes,comments,message'+params;
       //FQL query for getting all posts and specific fields
       FB.api('/'+ id + '/posts?fields=created_time,likes,comments,message', function(res){
-        var data = [];
-        for(post in res.data){
-          //Create temp object
-          var temp = {};
-          //Parse created_time string to get day of week and time
-          var s = post["created_time"];
-          var d = days[new Date(s).getDay()];
-          temp["time"] = s.slice(11,18);
-          temp["day"] = d;
-          //Add post message
-          if(post.indexOf("message") !== -1){
-            temp["message"] = post["message"];
-          }
-          //If comments exist, count and add
-          if(post.indexOf("comments") !== -1){
-            temp["comments_count"] = post["comments"]["data"].length;
-          }
-          //If likes exist, count and add
-          if(post.indexOf("likes") !== -1){
-            temp["likes_count"] = post["likes"]["data"].length;
-          }
-          //If shares exist, add total
-          if(post.indexOf("shares") !== -1){
-            temp["shares_count"] = post["shares"]["count"];
-          }
-          //Push completed object for that specific post onto data array
-          data.push(temp);
-        }
-        Request.IDs[id]["data"] = data;
+        Data.findKeys(res.data);
+        Request.IDs[id]["data"] = res.data;
       });
-    }
     return Request.IDs[id];
   }//end pullbyid
 };
