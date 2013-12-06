@@ -106,14 +106,22 @@ var UI = {
       console.log('No pages !');
     }
     for (p in pages) {
-      var html = '<tr id="page'+ pages[p].id +'" >' +
+      var html = '<tr id="page'+ pages[p].id +' class="page" " >' +
                     '<td>' + pages[p].name + '</td>' + 
                     '<td>' + pages[p].id + '</td>' +
                     '<td>No more data</td>' +
                   '</tr>';
       $('#pageBody').append(html);
+      $(document).on('click', '.page', function(){
+          var id = this.id.replace('page', '');
+          UI.getPageData(id, {});
+        });
     }
     return pages;
+  },
+  
+  getPageData: function(id, options){
+    options = options || {};
   }
   
 };
