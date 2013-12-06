@@ -59,7 +59,7 @@ var Request = {
         Request[key] = data;
       });
     }
-  };
+  },
 
   //Retrieves all posts and their reception info for a page
   //Returns array of tuples with data of every post
@@ -113,13 +113,14 @@ var Request = {
         Request[id] = data;
       });
     }
-  }
+  }//end pullbyid
+  
 };
   
 //event listener for pages
 $(document).on('click', '.page', function(){
   var id = this.id.replace('page', '');
-  UI.getPageData(id, {});
+  Request.pullByID(id);
 });
 
 var UI = {
@@ -140,8 +141,5 @@ var UI = {
     return pages;
   },
   
-  getPageData: function(id, options){
-    options = options || {};
-  }
   
 };
