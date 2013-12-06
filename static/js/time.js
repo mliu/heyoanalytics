@@ -67,50 +67,37 @@ function pullData(id){
   ]
   var reception = 0, post;
   //FQL query for getting all posts and specific fields
-  arr = FB.api('/'+ id + '/posts?fields=created_time,likes,comments,message')["data"];
-  for(post in arr){
-    // if(obj.hasOwnProperty(post)){
-    //Create temp object
-    var temp = {};
-    //Parse created_time string to get day of week and time
-    var s = post["created_time"];
-    var d = days[new Date(s).getDay()];
-    temp["time"] = s.slice(11,18);
-    temp["day"] = d;
-    //Add post message
-    if(post.inedexOf("message") !== -1){
-      temp["message"] = post["message"];
+  FB.api('/'+ id + '/posts?fields=created_time,likes,comments,message', function(res){
+    for(post in arr){
+      // if(obj.hasOwnProperty(post)){
+      //Create temp object
+      var temp = {};
+      //Parse created_time string to get day of week and time
+      var s = post["created_time"];
+      var d = days[new Date(s).getDay()];
+      temp["time"] = s.slice(11,18);
+      temp["day"] = d;
+      //Add post message
+      if(post.inedexOf("message") !== -1){
+        temp["message"] = post["message"];
+      }
+      //If comments exist, count and add
+      if(post.indexOf("comments") !== -1){
+        temp["comments_count"] = post["comments"]["data"].length;
+      }
+      //If likes exist, count and add
+      if(post.indexOf("likes") !== -1){
+        temp["likes_count"] = post["likes"]["data"].length;
+      }
+      //If shares exist, add total
+      if(post.indexOf("shares") !== -1){
+        temp["shares_count"] = post["shares"]["count"];
+      }
+      //Push completed object for that specific post onto data array
+      data.push(temp);
     }
-    //If comments exist, count and add
-    if(post.indexOf("comments") !== -1){
-      temp["comments_count"] = post["comments"]["data"].length;
-    }
-    //If likes exist, count and add
-    if(post.indexOf("likes") !== -1){
-      temp["likes_count"] = post["likes"]["data"].length;
-    }
-    //If shares exist, add total
-    if(post.indexOf("shares") !== -1){
-      temp["shares_count"] = post["shares"]["count"];
-    }
-    //Push completed object for that specific post onto data array
-    data.push(temp);
-    }
-  }
+  });
 
-/*
-function listPages(name, id){
-  var list = document.getElementById('list');
-  var a = document.createElement("a");
-  var li = document.createElement("li");
-  var t = document.createTextNode(name);
-  li.appendChild(t);
-  list.appendChild(li);
-  li.click() = function(){
-    pullData(id);
-  }
-}
-*/
 var UI = {
   
   //adds pages to page from FB api 
