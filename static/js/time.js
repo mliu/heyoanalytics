@@ -98,38 +98,6 @@ function pullData(id){
     }
   });
 
-  function listPages(arr){
-    //If comments exist, count and add
-    if(post.indexOf("comments") !== -1){
-      temp["comments_count"] = post["comments"]["data"].length;
-    }
-    //If likes exist, count and add
-    if(post.indexOf("likes") !== -1){
-      temp["likes_count"] = post["likes"]["data"].length;
-    }
-    //If shares exist, add total
-    if(post.indexOf("shares") !== -1){
-      temp["shares_count"] = post["shares"]["count"];
-    }
-    //Push completed object for that specific post onto data array
-    data.push(temp);
-    }
-  }
-
-/*
-function listPages(name, id){
->>>>>>> 7c3a449554e75b89130d87a8d6500ed458f188af
-  var list = document.getElementById('list');
-  var a = document.createElement("a");
-  var li = document.createElement("li");
-  var t = document.createTextNode(arr["name"]);
-  li.appendChild(t);
-  list.appendChild(li);
-  li.click() = function(){
-    pullData(id);
-  }
-}
-*/
 var UI = {
   
   //adds pages to page from FB api 
