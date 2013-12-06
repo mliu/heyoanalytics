@@ -112,7 +112,7 @@ var UI = {
       console.log('No pages !');
     }
     for (p in pages) {
-      var html = '<tr id="page'+ pages[p].id +' class="page" " >' +
+      var html = '<tr id="page'+ pages[p].id +'" class="page" >' +
                     '<td>' + pages[p].name + '</td>' + 
                     '<td>' + pages[p].id + '</td>' +
                     '<td>No more data</td>' +
