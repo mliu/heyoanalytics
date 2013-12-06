@@ -1,8 +1,11 @@
+
+console.log('JS loaded.');
 window.fbAsyncInit = function() {
+  console.log('load sdk async', FB);
   var data = [];
   // init the FB JS SDK
   FB.init({
-    appId      : '716812544998433',                        // App ID from the app dashboard
+    appId      : Settings.appId,                        // App ID from the app dashboard
     status     : true,                                 // Check Facebook Login status
     xfbml      : true                                  // Look for social plugins on the page
   });
@@ -16,9 +19,9 @@ window.fbAsyncInit = function() {
   //     FB.login({scope:'manage_pages, publish_stream'});
   //   }
   // });
-  // };
 
-  FB.Login(function(response){
+  FB.login(function(response){
+    console.log(response);
     if(response.authResponse){
       //Get Pages, have user choose which one to analyze
       listPages.apply(undefined, FB.api('/me/accounts?fields=name,id')["data"]);
@@ -27,9 +30,12 @@ window.fbAsyncInit = function() {
       document.getElementById('main-content').innerHTML = "Failed to load User Pages"
     }
   }, {scope: 'manage_pages, publish_stream, read_insights'});
+  
+};
 
 // Load the SDK asynchronously
 (function(d, s, id){
+  console.log('async loading');
    var js, fjs = d.getElementsByTagName(s)[0];
    if (d.getElementById(id)) {return;}
    js = d.createElement(s); js.id = id;
@@ -91,7 +97,6 @@ function pullData(id){
     data.push(temp);
     }
   }
-}
 
 Object.size = function(obj){
   var size = 0, key;

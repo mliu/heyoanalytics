@@ -5,8 +5,10 @@
 */
 
 var Settings = {
-    host:'localhost',
-    port:17456
+    host:'karxim.com/heyo',
+    port:17456,
+    appId:242671659190590
+
 };
 
 try{
