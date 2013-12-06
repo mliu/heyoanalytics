@@ -43,20 +43,22 @@ window.fbAsyncInit = function() {
  }(document, 'script', 'facebook-jssdk'));
 
 var Request = {
+  keys : [],
+  IDs : [],
   //Retrieves all posts from pages with a certain keyword
   //Appends array of tuples of posts under key
   pullByKeyword: function(key){
-    if(Request.indexOf(key) !== -1){
-      return Request[key];
+    if(Request.keys.indexOf(key) !== -1){
+      return Request.keys[key];
     }
     else{
       FB.api('/search?q=' + key + '&type=page', function(res){
         var data = [];
         for(page in res.data){
           pullReceptionData(page.id)
-          data.concat(Request.pullFromPage(page.id));
+          data.concat(Request.pullByID(page.id));
         }
-        Request[key] = data;
+        Request.keys[key] = data;
       });
     }
   },
@@ -64,11 +66,10 @@ var Request = {
   //Retrieves all posts and their reception info for a page
   //Returns array of tuples with data of every post
   pullByID: function(id){
-    if(Request.indexOf(id) !== -1){
-      return Request[id];
+    if(Request.IDs.indexOf(id) !== -1){
+      return Request.IDs[id];
     }
     else{
-      var data = [];
       //variables
       days = [
         'Sunday',
@@ -80,10 +81,14 @@ var Request = {
         'Saturday'
       ]
       var reception = 0, post;
+      FB.api('/' + id, function(res){
+        Request.IDs[id] = {};
+        Request.IDs[id]["likes"] = res.likes;
+      });
       //FQL query for getting all posts and specific fields
       FB.api('/'+ id + '/posts?fields=created_time,likes,comments,message', function(res){
+        var data = [];
         for(post in res.data){
-          // if(obj.hasOwnProperty(post)){
           //Create temp object
           var temp = {};
           //Parse created_time string to get day of week and time
@@ -110,9 +115,10 @@ var Request = {
           //Push completed object for that specific post onto data array
           data.push(temp);
         }
-        Request[id] = data;
+        Request.IDs[id]["data"] = data;
       });
     }
+    return Request.IDs[id];
   }
 };
   
