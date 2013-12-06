@@ -97,7 +97,13 @@ function pullData(id){
       data.push(temp);
     }
   });
-
+  
+  //event listener for pages
+  $(document).on('click', '.page', function(){
+    var id = this.id.replace('page', '');
+    UI.getPageData(id, {});
+  });
+  
 var UI = {
   
   //adds pages to page from FB api 
@@ -112,10 +118,6 @@ var UI = {
                     '<td>No more data</td>' +
                   '</tr>';
       $('#pageBody').append(html);
-      $(document).on('click', '.page', function(){
-          var id = this.id.replace('page', '');
-          UI.getPageData(id, {});
-        });
     }
     return pages;
   },
