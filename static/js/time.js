@@ -1,7 +1,5 @@
-
 console.log('JS loaded.');
 window.fbAsyncInit = function() {
-  console.log('load sdk async', FB);
   var data = [];
   // init the FB JS SDK
   FB.init({
@@ -10,15 +8,15 @@ window.fbAsyncInit = function() {
     xfbml      : true                                  // Look for social plugins on the page
   });
 
-  // FB.Event.subscribe('auth.authResponseChange', function(response) {
-  //   if (response.status === 'connected') {
-  //     testAPI();
-  //   } else if (response.status === 'not_authorized') {
-  //     FB.login({scope:'manage_pages, publish_stream'});
-  //   } else {
-  //     FB.login({scope:'manage_pages, publish_stream'});
-  //   }
-  // });
+  FB.Event.subscribe('auth.authResponseChange', function(response) {
+    if (response.status === 'connected') {
+      testAPI();
+    } else if (response.status === 'not_authorized') {
+      FB.login({scope:'manage_pages, publish_stream'});
+    } else {
+      FB.login({scope:'manage_pages, publish_stream'});
+    }
+  });
 
   FB.login(function(response){
     console.log(response);
