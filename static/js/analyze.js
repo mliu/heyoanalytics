@@ -128,7 +128,6 @@ $(document).on('click', '.page', function(){
   days = days || 365;
   var id = this.id.replace('page', '');
   var since = Math.floor((new Date().getTime() - 1000*60*60*24*days)/1000);
-  
   Request.pullByID(id, '&since='+since);
 });
 
@@ -148,7 +147,11 @@ var UI = {
       $('#pageBody').append(html);
     }
     return pages;
-  }  
+  },
+  
+  topKeyWords: function(){
+    
+  }
   
 };
 Data = {
@@ -156,13 +159,13 @@ Data = {
   /*
     Finds popular words for given FB response data.
   */
-  findKeys:function(data){
+  findKeys:function(data){  
     var mKeys = [];
     var cKeys = [];
-    console.log('find keys data', data);
-    for (post in data) {
+
+    for (post in data) {                      //add keywords as keys to mKeys and cKeys
       if (!data[post].message) continue; 
-      var keys = data[post].message.split(' '); //add all words to array
+      var keys = data[post].message.split(' '); 
       for (k in keys) {
         if (mKeys[keys[k]]){
           mKeys[keys[k]]++
@@ -171,7 +174,15 @@ Data = {
         }
       }
     }
+    
     mKeys.sort();
+    
+    for (s in this.stopWords) {         //remove junk words
+      if (mKey[this.stopWords[s]]) {
+        mKey.splice(this.stopWords[s], 1);
+      }
+    }
+    
     console.log('Most popular words in order are :');
     for (i in mKeys) {
       console.log(i);
