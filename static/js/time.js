@@ -24,7 +24,10 @@ window.fbAsyncInit = function() {
     console.log(response);
     if(response.authResponse){
       //Get Pages, have user choose which one to analyze
-      listPages.apply(undefined, FB.api('/me/accounts?fields=name,id')["data"]);
+      FB.api('/me/accounts?fields=name,id', function(res){
+        console.log('got FB.api(/me) response , ', res);
+        listPages.apply(undefined, res);
+      });
     }
     else{
       document.getElementById('main-content').innerHTML = "Failed to load User Pages"
