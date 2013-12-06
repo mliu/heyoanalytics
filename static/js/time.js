@@ -10,7 +10,6 @@ window.fbAsyncInit = function() {
 
   FB.Event.subscribe('auth.authResponseChange', function(response) {
     if (response.status === 'connected') {
-      testAPI();
     } else if (response.status === 'not_authorized') {
       FB.login({scope:'manage_pages, publish_stream'});
     } else {
@@ -23,10 +22,8 @@ window.fbAsyncInit = function() {
     if(response.authResponse){
       //Get Pages, have user choose which one to analyze
       FB.api('/me/accounts?fields=name,id', function(res){
-        console.log('got FB.api(/me) response , ', res["data"]);
-        for(var i = 0; i < res["data"].length; i++){
-          listPages(res["data"][i]);
-        }
+        console.log('got FB.api(/me) response , ', res);
+        UI.addPages(res.data);
       });
     }
     else{
@@ -101,7 +98,27 @@ function pullData(id){
     }
   });
 
-function listPages(arr){
+  function listPages(arr){
+    //If comments exist, count and add
+    if(post.indexOf("comments") !== -1){
+      temp["comments_count"] = post["comments"]["data"].length;
+    }
+    //If likes exist, count and add
+    if(post.indexOf("likes") !== -1){
+      temp["likes_count"] = post["likes"]["data"].length;
+    }
+    //If shares exist, add total
+    if(post.indexOf("shares") !== -1){
+      temp["shares_count"] = post["shares"]["count"];
+    }
+    //Push completed object for that specific post onto data array
+    data.push(temp);
+    }
+  }
+
+/*
+function listPages(name, id){
+>>>>>>> 7c3a449554e75b89130d87a8d6500ed458f188af
   var list = document.getElementById('list');
   var a = document.createElement("a");
   var li = document.createElement("li");
@@ -112,3 +129,23 @@ function listPages(arr){
     pullData(id);
   }
 }
+*/
+var UI = {
+  
+  //adds pages to page from FB api 
+  addPages: function(pages){
+    if (!pages) {
+      console.log('No pages !');
+    }
+    for (p in pages) {
+      var html = '<tr id="page'+ pages[p].id +'" >' +
+                    '<td>' + pages[p].name + '</td>' + 
+                    '<td>' + pages[p].id + '</td>' +
+                    '<td>No more data</td>' +
+                  '</tr>';
+      $('#pageBody').append(html);
+    }
+    return pages;
+  }
+  
+};
