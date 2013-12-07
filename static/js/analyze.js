@@ -45,10 +45,55 @@ window.fbAsyncInit = function() {
 var Request = {
   keys : [],
   IDs : [],
+  trend : {},
 
-  getTrending: function(key){
-    
+  //Returns keywords of a message
+  getKeywords: function(message){
+    res = [];
+    arr = message.split(" ");
+    for(word in arr){
+      if(Data.stopWords.indexOf(word) !== -1){
+        res.append(word);
+      }
+    }
+    return res;
   },
+
+  //Calculates trendVal from a given date string
+  getTrendVal: function(date){
+
+  },
+
+  calculateReception: function(post){
+
+  },
+
+  //Calculates percent engagement given likes and reception <=
+  getPercentEng: function(likes, reception){
+
+  },
+
+  //Compiles all posts from pages with a certain keyword and returns a
+  //object with keys:keywords and values:trendVal,totalPercentEng,count
+  //trendVal gives higher weighting to keywords used more often that
+  //are more recent
+  getTrending: function(key){
+    data = pullByKeyword(key);
+    temp = {};
+    for(post in data){
+      if(post["data"].indexOf("message") !== -1){
+        arr = getKeywords(post["data"]["message"])
+        for(word in arr){
+          if(temp.hasOwnProperty(word)){
+            temp["trendVal"] += getTrendVal(post["data"]["created_time"]);
+            temp["count"]++;
+            temp["totalPercentEng"] += getPercentEng(post["likes"], calculateReception(post["data"]))
+          }
+        }
+      }
+    }
+  },
+
   //Retrieves all posts from pages with a certain keyword
   //Appends array of tuples of posts under key
   pullByKeyword: function(key){
@@ -64,6 +109,7 @@ var Request = {
         }
         Request.keys[key] = data;
       });
+      return Request.keys[key]
     }
   },
 
@@ -87,17 +133,26 @@ var Request = {
       var reception = 0, post;
       FB.api('/' + id, function(res){
         Request.IDs[id] = {};
-        Request.IDs[id]["likes"] = res.likes;
+        if(res.hasOwnProperty("likes")){
+          Request.IDs[id]["likes"] = res.likes;
+        }
+        else{
+          Request.IDs[id]["likes"] = 0;
+        }
       });
       //FQL query for getting all posts and specific fields
-      FB.api('/'+ id + '/posts?fields=created_time,likes,comments,message', function(res){
+      FB.api('/'+ id + '/posts?fields=created_time,likes,comments,message,story', function(res){
         var data = [];
         for(post in res.data){
+          if(post.indexOf("story") !== -1){
+            continue;
+          }
           //Create temp object
           var temp = {};
           //Parse created_time string to get day of week and time
           var s = post["created_time"];
           var d = days[new Date(s).getDay()];
+          temp["created_time"] = s
           temp["time"] = s.slice(11,18);
           temp["day"] = d;
           //Add post message
@@ -114,7 +169,7 @@ var Request = {
           }
           //If shares exist, add total
           if(post.indexOf("shares") !== -1){
-            temp["shares_count"] = post["shares"]["count"];
+            temp["shares_count"] = post["shares"]["count"].length;
           }
           //Push completed object for that specific post onto data array
           data.push(temp);
