@@ -1,46 +1,4 @@
-console.log('JS loaded.');
-window.fbAsyncInit = function() {
-  // init the FB JS SDK
-  FB.init({
-    appId      : Settings.appId,                        // App ID from the app dashboard
-    status     : true,                                 // Check Facebook Login status
-    xfbml      : true                                  // Look for social plugins on the page
-  });
 
-  FB.Event.subscribe('auth.authResponseChange', function(response) {
-    if (response.status === 'connected') {
-    } else if (response.status === 'not_authorized') {
-      FB.login({scope:'manage_pages, publish_stream'});
-    } else {
-      FB.login({scope:'manage_pages, publish_stream'});
-    }
-  });
-
-  FB.login(function(response){
-    console.log(response);
-    if(response.authResponse){
-      //Get Pages, have user choose which one to analyze
-      FB.api('/me/accounts?fields=name,id', function(res){
-        console.log('got FB.api(/me) response , ', res);
-        UI.addPages(res.data);
-      });
-    }
-    else{
-      document.getElementById('main-content').innerHTML = "Failed to load User Pages"
-    }
-  }, {scope: 'manage_pages, publish_stream, read_insights'});
-  
-};
-
-// Load the SDK asynchronously
-(function(d, s, id){
-  console.log('async loading');
-   var js, fjs = d.getElementsByTagName(s)[0];
-   if (d.getElementById(id)) {return;}
-   js = d.createElement(s); js.id = id;
-   js.src = "//connect.facebook.net/en_US/all.js";
-   fjs.parentNode.insertBefore(js, fjs);
- }(document, 'script', 'facebook-jssdk'));
 
 var Request = {
   keys : [],
@@ -50,8 +8,7 @@ var Request = {
   pullByKeyword: function(key){
     if(Request.keys.indexOf(key) !== -1){
       return Request.keys[key];
-    }
-    else{
+    }else{
       FB.api('/search?q=' + key + '&type=page', function(res){
         var data = [];
         for(page in res.data){
@@ -69,8 +26,8 @@ var Request = {
     if(Request.IDs.indexOf(id) !== -1) return Request.IDs[id];
     params = params || '';
       var reception = 0, post;
+      Request.IDs[id] = {};
       FB.api('/' + id, function(res){
-        Request.IDs[id] = {};
         Request.IDs[id]["likes"] = res.likes;
       });
       var url = '/'+ id + '/posts?fields=created_time,likes,comments,message'+params;
@@ -118,35 +75,60 @@ var UI = {
 Data = {
   stopWords:[],
   /*
-    Finds popular words for given FB response data.
+    Finds popular words for given FB response data (keys).
   */
   findKeys:function(data){  
     var mKeys = [];
     var cKeys = [];
-
+    var found = false;
     for (post in data) {                      //add keywords as keys to mKeys and cKeys
+      
       if (!data[post].message) continue; 
-      var keys = data[post].message.split(' '); 
+      var keys = data[post].message.split(' ');
+      
       for (k in keys) {
-        if (mKeys[keys[k]]){
-          mKeys[keys[k]]++
+        keys[k] = keys[k].toLowerCase();  //format key
+        keys[k] = keys[k].replace('.', '');
+        keys[k] = keys[k].replace(',', '');
+        keys[k] = keys[k].replace('\'', '');
+        keys[k] = keys[k].replace('\"', '');
+        keys[k] = keys[k].replace('?', '');
+        keys[k] = keys[k].replace('!', '');
+        if (keys[k] == '') {
+          continue;
+        }
+        if (this.stopWords.indexOf(keys[k]) != -1) continue;
+        
+        // Increment key if already exists.
+        for (i in mKeys) {
+          if (mKeys[i][0] == keys[k]) {
+            console.log('found key '+ mKeys[i][0]);
+            mKeys[i][1]++;
+            var found = true;
+            break;
+          }
+        }
+        // add key if it doesn't
+        if (!found){
+          var tuple = [keys[k], 1];
+          mKeys.push(tuple);
         }else{
-          mKeys[keys[k]] = 1;
+          found = false;
         }
       }
+      
     }
-    
-    mKeys.sort();
-    
-    for (s in this.stopWords) {         //remove junk words
-      if (mKey[this.stopWords[s]]) {
-        mKey.splice(this.stopWords[s], 1);
-      }
-    }
-    
-    console.log('Most popular words in order are :');
+
+    console.log('1 ', mKeys);
+    mKeys.sort(function(a,b){ //sort in descending order.
+      a = a[1];
+      b = b[1];
+      return (a > b ? 0 : 1);
+    });
+    console.log('2 ', mKeys);
+    //console.log('Most popular words in order are :');
     for (i in mKeys) {
-      console.log(i);
+      console.log('Key : \'' + mKeys[i][0] + '\', Frequencey : ' + mKeys[i][1]);
     }
   }
 }
