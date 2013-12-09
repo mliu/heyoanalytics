@@ -1,3 +1,16 @@
+body{
+  font:1em Helvetica,arial,sans-serif;
+  font-family:Helvetica,arial,sans-serif;
+  font-size:1em;
+  font-style:normal;
+  font-variant:normal;
+  font-weight:normal;
+}
+
+input{
+  margin: 10px;
+}
+
 .bar{
   width:370px;
   position:absolute;
@@ -35,15 +48,6 @@
   cursor: pointer;
 }
 
-body{
-  font:1em Helvetica,arial,sans-serif;
-  font-family:Helvetica,arial,sans-serif;
-  font-size:1em;
-  font-style:normal;
-  font-variant:normal;
-  font-weight:normal;
-}
-
 #list ul{
   margin-left:auto;
   margin-right:auto;
@@ -55,4 +59,8 @@ body{
   border-radius:10px;
   background-color:#E3E3E4;
   cursor:pointer;
+}
+
+#days{
+  max-width: 2em;
 }
