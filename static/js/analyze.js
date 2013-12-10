@@ -115,21 +115,9 @@ var Request = {
 
   //Retrieves all posts and their reception info for a page
   //Returns array of tuples with data of every post
-  pullByID: function(id){
-    if(Request.IDs.indexOf(id) !== -1){
-      return Request.IDs[id];
-    }
-    else{
-      //variables
-      days = [
-        'Sunday',
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday'
-      ]
+  pullByID: function(id, params){
+    if(Request.IDs.indexOf(id) !== -1) return Request.IDs[id];
+    params = params || '';
       var reception = 0, post;
       FB.api('/' + id, function(res){
         Request.IDs[id] = {};
@@ -140,7 +128,9 @@ var Request = {
           Request.IDs[id]["likes"] = 0;
         }
       });
+      var url = '/'+ id + '/posts?fields=created_time,likes,comments,message'+params;
       //FQL query for getting all posts and specific fields
+<<<<<<< HEAD
       FB.api('/'+ id + '/posts?fields=created_time,likes,comments,message,story', function(res){
         var data = [];
         for(post in res.data){
@@ -175,8 +165,12 @@ var Request = {
           data.push(temp);
         }
         Request.IDs[id]["data"] = data;
+=======
+      FB.api('/'+ id + '/posts?fields=created_time,likes,comments,message', function(res){
+        Data.findKeys(res.data);
+        Request.IDs[id]["data"] = res.data;
+>>>>>>> e222afa70540d43f737448e0a78d07b936e45e48
       });
-    }
     return Request.IDs[id];
   }//end pullbyid
 };
@@ -187,7 +181,6 @@ $(document).on('click', '.page', function(){
   days = days || 365;
   var id = this.id.replace('page', '');
   var since = Math.floor((new Date().getTime() - 1000*60*60*24*days)/1000);
-  
   Request.pullByID(id, '&since='+since);
 });
 
@@ -207,7 +200,11 @@ var UI = {
       $('#pageBody').append(html);
     }
     return pages;
-  }  
+  },
+  
+  topKeyWords: function(){
+    
+  }
   
 };
 Data = {
@@ -215,13 +212,13 @@ Data = {
   /*
     Finds popular words for given FB response data.
   */
-  findKeys:function(data){
+  findKeys:function(data){  
     var mKeys = [];
     var cKeys = [];
-    console.log('find keys data', data);
-    for (post in data) {
+
+    for (post in data) {                      //add keywords as keys to mKeys and cKeys
       if (!data[post].message) continue; 
-      var keys = data[post].message.split(' '); //add all words to array
+      var keys = data[post].message.split(' '); 
       for (k in keys) {
         if (mKeys[keys[k]]){
           mKeys[keys[k]]++
@@ -230,7 +227,15 @@ Data = {
         }
       }
     }
+    
     mKeys.sort();
+    
+    for (s in this.stopWords) {         //remove junk words
+      if (mKey[this.stopWords[s]]) {
+        mKey.splice(this.stopWords[s], 1);
+      }
+    }
+    
     console.log('Most popular words in order are :');
     for (i in mKeys) {
       console.log(i);
