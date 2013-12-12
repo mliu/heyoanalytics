@@ -7,16 +7,8 @@ body{
   font-weight:normal;
 }
 
-input{
-  margin: 10px;
-}
-
 .bar{
-  width:370px;
-  position:absolute;
-  top:0;
-  right:0;
-  bottom:0;
+
   background-color:#38393b;
 }
 
@@ -35,19 +27,69 @@ input{
 }
 
 .abs{position: absolute;}
+.rel{position: relative;}
+.fixed{position: fixed;}
+
+.white{color:white;}
+.green{color:green;}
+.red{color:red;}
+
+.bg1{background: #f5f5f5;}
+.bg2{background: #BABCBE;}
+.bg3{background: #333;}
+
+.border1{border: 1px solid #e3e3e3;}
+
+.color1{color:#f5f5f5;}
+.color2{color:#BABCBE;}
+
 .level1{z-index: 1;}
 .level2{z-index: 2;}
 .level3{z-index: 3;}
 .level4{z-index: 4;}
 
-.page{
-  background: #f2f2f2;
-}
+.size1{max-width: 100px; max-height: 80px;}
+.size2{max-width: 200px; max-height: 160px;}
+.size3{max-width: 300px; max-height: 240px;}
+
+.width1{max-width: 100px;}
+.width2{max-width: 200px;}
+.width3{max-width: 300px;}
+.width4{max-width: 400px;}
+
+.fleft{float: left; left:0px;}
+.fright{float: right; right:0px;}
+
+.pad5{padding:5px;}
+.pad10{padding:10px;}
+.pad15{padding:15px;}
+.pad20{padding:20px;}
+
+.fs12{font-size: 1.2em;}
+.fs14{font-size: 1.4em;}
+.fs16{font-size: 1.6em;}
+.fs18{font-size: 1.8em;}
+.fs20{font-size: 2em;}
+.fs30{font-size: 3em;}
+
+.shadow{box-shadow: -2px 2px 20px 1px #000;}
+
 .page:hover{
   background: #d2d2d2;
   cursor: pointer;
 }
-
+.glyphicon:hover{
+  cursor: pointer;
+}
+.popup{
+  top:20px;
+  left:20px;
+  min-height: 100px;
+  min-width: 200px;
+}
+.popup message{
+  
+}
 #list ul{
   margin-left:auto;
   margin-right:auto;
@@ -64,3 +106,9 @@ input{
 #days{
   max-width: 2em;
 }
+
+#options select{
+  margin-bottom: 20px;
+}
+
+#load{top:5px; left:5px;}

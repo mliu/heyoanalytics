@@ -2,50 +2,113 @@
 <html>
 <head>
   <title>Heyo Analytics</title>
+  <link rel="stylesheet" href="static/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="static/bootstrap/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="static/css/load.css">
   <link rel="stylesheet" href="static/css/style.css">
   <link rel="stylesheet" href="static/css/auth-buttons.css">
-    <script type="text/javascript" src="static/js/jquery-1.10.2.min.js"></script>
+  <script type="text/javascript" src="static/js/jquery-1.10.2.min.js"></script>
 </head>
 <body>
 
-  <div id="fb-root"></div>
-  <div class="content" id="main-content">
-    <ul id="list">
-      <!-- List added dynamically by Javascript, then hidden style applied upon selection -->
-    </ul>
-  </div>
-
   <div class="bar">
     <div class="bar-content">
-      <img src="static/images/heyo_logo.png" style="margin-bottom:30px">
+      <img src="static/images/heyo_logo.png" class="size2">
 <!--       <a class="btn-auth btn-facebook large" href="#" id="fb-btn">
         Sign in with <b>Facebook</b>
       </a> -->
 <!--       <div class="fb-login-button" data-width="370" data-height="100" data-max-rows="1" data-show-faces="false" autologout-link="true"></div> -->
     </div>
   </div>
-  <div class="abs level2">
-    <h3>Click a page to see info on it in console</h3>
-    <table>
-      <tbody id="pageBody">
-        <tr>
-          <th> Name </th>
-          <th> ID </th>
-          <th> Other </th>
-        </tr>
-      </tbody>
-    </table>
-    <h3>Or see info on other pages by keyword in console</h3>
-    Posts with last <input type="text" value="365" placeholder="days" id="days"> days
-    
-    <input type="text" placeholder="Get page by keyword" id="keyword" >
-    <button type="text" id="findPages" >Find Pages</button>
+    <div class=" container fleft ">
+      <div class="row">
+        <div class="col-xs-6 .col-md-4">
+          <h3>Select page to sugggest keywords</h3>
+          <table class="table table-striped">
+            <tbody id="pageBody">
+              <tr>
+                <th> Name </th>
+                <th> Likes </th>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="col-xs-6 .col-md-4">
+          <h3>Keywords</h3>
+          <div id="keywordWrap" class="bg1 border1 pad20 fleft">
+            <div id="keywordTemplate" class="inputWrap">
+              <span class="glyphicon glyphicon-remove red"></span>
+              <span class="glyphicon glyphicon-ok green" ></span>
+              <input type="text" class="form-control form-inline keyword" placeholder="Add a keyword . . .">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-6 .col-md-4">
+          <h3>Crunch posts</h3>
+          <div id="options" class="pad10 fs12">
+            Select time frame
+            <select id="timeSince" class="form-control ">
+              <option value="1">Last hour</option>
+              <option value="24">Last day</option>
+              <option value="168">Last week</option>
+            </select>
+            <!-- Select number of pages to crawl
+            <select id="num" class="form-control ">
+              <option value="100">100</option>
+              <option value="50">50</option>
+              <option value="40">40</option>
+              <option value="30">30</option>
+              <option value="25" selected="selected">25</option>
+              <option value="10">10</option>
+              <option value="5">5</option>
+            </select> -->
+            Select Facebook element to search
+            <select id="objectType" class="form-control ">
+              <option value="page">Pages</option>
+              <option value="post">Posts</option>
+              <option value="event">Events</option>
+              <option value="user">Users</option>
+            </select>
+          </div>
+          <button id="getPosts" class="btn btn-success">Crunch</button>
+        </div>
+      </div>
   </div>
-  
+    <!-- Templates -->
+  <div class="hide">
+    <div id="popupTemplate">
+      <div class="popup fixed pad20 bg3 white shadow">
+        <span class="glyphicon glyphicon-remove fright fs16 color2 closePopup"></span>
+        <div class="title fs20 pad10"></div>
+        <div class="message pad10 fs14"></div>
+      </div>
+    </div>
+  </div>
+  <!-- load icon -->
+<div class="windows8 hide" id="load">
+  <div class="wBall" id="wBall_1">
+    <div class="wInnerBall"></div>
+  </div>
+  <div class="wBall" id="wBall_2">
+    <div class="wInnerBall"></div>
+  </div>
+  <div class="wBall" id="wBall_3">
+    <div class="wInnerBall"></div>
+  </div>
+  <div class="wBall" id="wBall_4">
+    <div class="wInnerBall"></div>
+  </div>
+  <div class="wBall" id="wBall_5">
+    <div class="wInnerBall"></div>
+  </div>
+</div>
 
   <script type="text/javascript" src="static/js/settings.js"></script>
   <script type="text/javascript" src="static/js/fb.js"></script>
   <script type="text/javascript" src="static/js/analyze.js"></script>
   <script type="text/javascript" src="static/js/stopword.js"></script>
+  <script type="text/javascript" src="static/js/control.js"></script>
 </body>
 </html>
