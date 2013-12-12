@@ -97,10 +97,11 @@ var PublicTrending = {
   }
 };
 
+
+
 var Request = {
   keys : [],
   IDs : [],
-
   /*
     Retrieves all posts from pages with a certain keyword
     Appends array of posts objects under key
@@ -132,7 +133,6 @@ var Request = {
         Request.keys[params.query] = res.data;
         callback(res.data);
       });
-      return Request.keys[key]
     }
   },
 
@@ -230,14 +230,15 @@ var UI = {
     var kw = $('#keywordTemplate').clone();
     kw.attr('id','');
     kw.find('.glyphicon-ok').remove();
-    kw.find('input.keyword').val(keyword);
-    kw.find('input.keyword').attr('readonly',true);
+    kw.find('input.keywordQuery').val(keyword);
+    //kw.find('input.keywordQuery').attr('readonly',true);
     
     $('#keywordWrap').prepend(kw);
   },
-  /* clear key words enterd */
+  
+  /* clear key words enterd in query table*/
   clearKeyWords: function(){
-    $('.keyword').each(function(){
+    $('.keywordQuery').each(function(){
       if (!($(this).parents('.inputWrap').attr('id') == 'keywordTemplate')){
         $(this).parents('.inputWrap').remove();
       }
@@ -251,13 +252,20 @@ var UI = {
   */
   popup: function(title, message, options){
     options = options || {};
+    $('#popupSpace').find('.popup').remove();
     var popup = $($('#popupTemplate').html());
     popup.find('.title').html(title);
     popup.find('.message').html(message);
-    if (options.error) {
+    
+    if (options.error) 
       popup.find('.title').addClass('red');
+    
+    if (options.white) {
+      popup.css('background','white');
+      popup.css('color','black');
     }
-    $('body').append(popup);
+    $('#popupSpace').append(popup);
+    popup.show('fast');
     
     setTimeout(function(){
       if (options.millis) {
@@ -274,18 +282,97 @@ var UI = {
   loaded: function(){
     $('#load').hide();
   },
-  /*
-    Display keywords for given array
+
+  /* Add a trend as an entry to result table
+   
+    *Make sure the keys match obj.
     
+    @param trends - array
   */
-  topKeyWords: function(array, options){
+  addTrends: function(params){
+    params = params || {};
+    var html;
+    if ($('#noResults').length) $('#noResults').hide();
+    for (var i in params.trends) {
+      html = '<tr class="trendEntry">' +
+                    '<td><strong class="keyword trend clicker">' + params.trends[i].keyword + '</strong></td>' +
+                    '<td class="heyoPoints"> ' + params.trends[i].trendVal + ' </td>' + //heyo points
+                    '<td class="engagement"> ' + params.trends[i].avgEng + '% </td>' +
+              '</tr>';
+      $('#trendBody').append(html);
+    }
+    return html;
+  },
+  /*
+    Wipe the trends in trend table.
+  */
+  clearTrends: function(){
+    $('.trendEntry').remove();
+    $('#noResults').show('fast');
+    return 1;
+  },
+  
+  /*
+    Show trending posts in popup
     
+    *Set postArray equal to array containing all posts.
+    
+    @pOptions - same options for popup.
+  */
+  showPosts: function(key, pOptions){
+    pOptions = pOptions || { white: true };
+    //Set this to correct path.
+    var postArray = Data.trendPosts;
+    
+    if (!postArray[key]) {
+      console.log('key doesn\'t exist');
+      return {};
+    }
+    var table = $($('#trendPostTemplate').html());
+    for (var i in postArray[key]) {
+      postArray[key][i] = postArray[key][i] || {};
+      var message = postArray[key][i].message,
+          message = message ? message : '';
+      var comments = postArray[key][i].comment_count,
+          comments = comments ? comments : 0;
+      var likes = postArray[key][i].like_count,
+          likes = likes ? likes : 0;
+      var html = '<tr class="trendPost">' +
+                    '<td><strong>' + message + '</strong></td>' +
+                    '<td class="comments"> ' + comments + ' </td>' +
+                    '<td class="likes"> ' + likes + ' </td>' +
+                  '</tr>';
+      table.append(html);
+    }
+    this.popup('Trending Posts', table, pOptions);
+    return table;
+  },
+  
+  //testing
+  testTrends: function(){
+    var entry;
+    var trends = [];
+    for (var i = 0; i <6; i++){
+      trends.push({keyword: 'test'+i, avgEng:i, trendVal:Math.floor(Math.random() * 150)});
+      testObj.trendPosts['test'+i] = [];
+        for (var n=0; n<5; n++){
+          testObj.trendPosts['test'+i].push( {
+            message: 'a message for test'+i+' and post'+n,
+            like_count:Math.floor(Math.random() * 250),
+            comment_count:Math.floor(Math.random() * 50)
+          });
+      }
+    }
+    this.addTrends({trends:trends});
+    return trends;
   }
   
 };
+
+
 Data = {
-  trendPosts : {},
   stopWords:[],
+  trendPosts : {},
   /*
     Finds popular words for given blob of text.
     Sorts by frequency.  No duplicates.
@@ -381,12 +468,12 @@ Data = {
     }
   },
   /*
-    Returns array of keywords in keyword wrap on page.
+    Returns array of query keywords in keyword wrap on page.
   */
   keyWordQuery: function(){
     var keywords = [];
   
-    $('.keyword').each(function(){
+    $('.keywordQuery').each(function(){
       if (!($(this).parents('.inputWrap').attr('id') == 'keywordTemplate')){
         
         keywords.push($(this).val());
@@ -395,4 +482,4 @@ Data = {
     
     return keywords;
   }
-}
+};

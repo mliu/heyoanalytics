@@ -33,18 +33,10 @@ $(document).on('click', '.page', function(){
   
 });
 
-//event listener for getting page info by keyword
-$(document).on('click', '#findPages', function(){
-  var keyword = $.trim($('#keyword').val());
-  if (keyword == '') return;
-  Request.pullByKeyword(keyword, function(data){
-    console.log('got pages back', data);
-  });
-});
 
 //add a keyword for search.
 $(document).on('click', '.glyphicon-ok', function(){
-    var input = $(this).siblings('input.keyword');
+    var input = $(this).siblings('input.keywordQuery');
     var kw = $.trim(input.val());
     if (kw == '') return;
     input.val('');
@@ -67,6 +59,12 @@ $(document).on('click', '.closePopup', function(){
     $(this).parents('.popup').remove();
 });
 
+//show posts for trending keyword in popup
+$(document).on('click mouseover', '.trend', function(){
+    var keyword = $(this).text();
+    console.log('trend fire ', keyword);
+    UI.showPosts(keyword);
+});
 
 //get posts on crunch button
 $(document).on('click', '#getPosts', function(){
