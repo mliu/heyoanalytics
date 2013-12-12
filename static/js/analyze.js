@@ -35,7 +35,7 @@ var PublicTrending = {
       }
     }
     return -1;
-  }
+  },
 
   //Compiles all posts from pages with a certain keyword and returns a
   //object with keys:keywords and values:trendVal,totalPercentEng,count
@@ -84,8 +84,9 @@ var PublicTrending = {
                 totalPercentEng : PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]),
                 avgEng : PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id])
               }
-              PublicTrending.keys.push(temp);
             }
+            Data.mergeKeywordData(temp, likes, comments, shares, post["message"]);
+            PublicTrending.keys.push(temp);
           }
         }
       }
@@ -291,6 +292,26 @@ Data = {
     Sorts by frequency.  No duplicates.
     Ignores words in stopWords array.
   */
+
+  mergeKeywordData: function(data, likes, comments, shares, message){
+    if(!trendPosts.hasOwnProperty(data[keyword])){
+      trendPosts[data[keyword]] = [];
+    }
+    trendPosts[data[keyword]].push({
+      message: message,
+      avgEng: data[avgEng], //Heyo Points
+      likes: likes,
+      comments: comments,
+      shares: shares
+    });
+    trendPosts[data[keyword]].sort(function(a,b){
+      return a.avgEng - b.avgEng;
+    });
+    if(trendPosts[data[keyword]].length > 10){
+      trendPosts[data[keyword]].splice(10, 1);
+    }
+  },
+   
   sortText:function(text){  
     var mKeys = [];
     var found = false;
