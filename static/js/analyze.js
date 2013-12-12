@@ -35,7 +35,7 @@ var PublicTrending = {
       }
     }
     return -1;
-  }
+  },
 
   //Compiles all posts from pages with a certain keyword and returns a
   //object with keys:keywords and values:trendVal,totalPercentEng,count
@@ -368,7 +368,6 @@ var UI = {
   }
   
 };
-
 
 Data = {
   stopWords:[],
