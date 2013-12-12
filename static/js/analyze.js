@@ -1,18 +1,31 @@
 var PublicTrending = {
   keys : {},
+  IDs : {},
 
   //Calculates trendVal from a given date string
   getTrendVal: function(date){
-    
+    var current = new Date();
+    var d = new Date(date);
+    var diff = (current.getTime() - d.getTime());
+    return 5000000000/diff;
   },
 
-  calculateReception: function(post){
-
+  getLikes: function(str, callback){
+    var temp = str.replace("https://graph.facebook.com/").substr(0, temp.indexOf("/"));
+    if(temp == str){
+      console.log("error, could not retrieve ID string");
+      return "-1";
+    }else{
+      FB.api('/' + temp, function(res){
+        PublicTrending.IDs[temp] = res.likes;
+      });
+    }
+    return temp;
   },
 
-  //Calculates percent engagement given likes and reception <=
-  getPercentEng: function(likes, comments, shares, reception){
-
+  //Calculates percent engagement given likes and totalLikes
+  getPercentEng: function(likes, comments, shares, totalLikes){
+    return((likes + comments + shares)/totalLikes);
   },
 
   //Compiles all posts from pages with a certain keyword and returns a
@@ -20,18 +33,54 @@ var PublicTrending = {
   //trendVal gives higher weighting to keywords used more often that
   //are more recent
   getTrending: function(data){
-    temp = {};
+    var id = "";
     for(obj in data){
       for(post in obj[data]){
-        arr = Data.popularKeys(post)
-        for(word in arr.posts){
-          if(temp.hasOwnProperty(word)){
-            temp[trendVal] += getTrendVal(post[created_time]);
-            temp[count]++;
-            temp[totalPercentEng] += getPercentEng(post[likes], calculateReception(post["data"]))
-          }else{
-            temp[word] = {
-              trendVal : getTrendVal(post[data])
+        if(post.hasOwnProperty("message")){
+          arr = Data.popularKeys(post);
+          for(word in arr.posts){
+            if(PublicTrending.keys.hasOwnProperty(word)){
+              PublicTrending.keys[word][trendVal] += PublicTrending.getTrendVal(post[created_time]);
+              PublicTrending.keys[word][count]++;
+              if(post.hasOwnProperty(likes)){
+                likes = post[likes][summary][total_count];
+              }else{
+                likes = 0;
+              }
+              if(post.hasOwnProperty(comments)){
+                comments = post[comments][summary][total_count];
+              }else{
+                comments = 0;
+              }
+              if(post.hasOwnProperty(shares)){
+                shares = post[shares][summary][total_count];
+              }else{
+                shares = 0;
+              }
+              id = PublicTrending.getLikes(obj[paging][next])
+              PublicTrending.keys[word][totalPercentEng] += PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]);
+            }else{
+              id = PublicTrending.getLikes(obj[paging][next]);
+              if(post.hasOwnProperty(likes)){
+                likes = post[likes][summary][total_count];
+              }else{
+                likes = 0;
+              }
+              if(post.hasOwnProperty(comments)){
+                comments = post[comments][summary][total_count];
+              }else{
+                comments = 0;
+              }
+              if(post.hasOwnProperty(shares)){
+                shares = post[shares][summary][total_count];
+              }else{
+                shares = 0;
+              }
+              PublicTrending.keys[word] = {
+                trendVal : PublicTrending.getTrendVal(post[created_time]);
+                count : 1;
+                totalPercentEng : PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]);
+              }
             }
           }
         }
