@@ -105,7 +105,7 @@ var PublicTrending = {
                 avgEng : this.getPercentEng(likes, comments, shares, this.IDs[id])
               }
             }
-            Data.mergeKeywordData(temp, likes, comments, shares, post["message"]);
+            Data.mergeKeywordData(temp, id, likes, comments, shares, post["message"]);
             PublicTrending.keys.push(temp);
           }
         }
@@ -399,7 +399,7 @@ Data = {
     Ignores words in stopWords array.
   */
 
-  mergeKeywordData: function(data, likes, comments, shares, message){
+  mergeKeywordData: function(data, id, likes, comments, shares, message){
     if(!Data.trendPosts.hasOwnProperty(data[keyword])){
       Data.trendPosts[data[keyword]] = [];
     }
@@ -407,6 +407,7 @@ Data = {
       message: message,
       avgEng: data[avgEng], //Heyo Points
       likes: likes,
+      url: "http://facebook.com/" + id,
       comments: comments,
       shares: shares
     });
