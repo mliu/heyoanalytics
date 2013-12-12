@@ -44,28 +44,30 @@ var PublicTrending = {
   getTrending: function(data){
     var id = "";
     var index = -1;
+    var likes = 0;
+    var shares = 0;
     var temp = {};
     for(obj in data){
       for(post in obj[data]){
         if(post.hasOwnProperty("message")){
           arr = Data.popularKeys(post);
+          if(post.hasOwnProperty(likes)){
+            likes = post[likes][summary][total_count];
+          }else{
+            likes = 0;
+          }
+          if(post.hasOwnProperty(comments)){
+            comments = post[comments][summary][total_count];
+          }else{
+            comments = 0;
+          }
+          if(post.hasOwnProperty(shares)){
+            shares = post[shares][summary][total_count];
+          }else{
+            shares = 0;
+          }
           for(word in arr.posts){
             index = inArr(word);
-            if(post.hasOwnProperty(likes)){
-              likes = post[likes][summary][total_count];
-            }else{
-              likes = 0;
-            }
-            if(post.hasOwnProperty(comments)){
-              comments = post[comments][summary][total_count];
-            }else{
-              comments = 0;
-            }
-            if(post.hasOwnProperty(shares)){
-              shares = post[shares][summary][total_count];
-            }else{
-              shares = 0;
-            }
             if(index > 0){
               temp = PublicTrending.keys[index];
               temp[trendVal] += PublicTrending.getTrendVal(post[created_time]);
@@ -76,11 +78,11 @@ var PublicTrending = {
             }else{
               id = PublicTrending.getLikes(obj[paging][next]);
               temp = {
-                keyword : word;
-                trendVal : PublicTrending.getTrendVal(post[created_time]);
-                count : 1;
-                totalPercentEng : PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]);
-                avgEng : PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]);
+                keyword : word,
+                trendVal : PublicTrending.getTrendVal(post[created_time]),
+                count : 1,
+                totalPercentEng : PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]),
+                avgEng : PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id])
               }
               PublicTrending.keys.push(temp);
             }
