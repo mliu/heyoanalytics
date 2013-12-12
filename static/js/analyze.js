@@ -28,10 +28,6 @@ var PublicTrending = {
     return((likes + comments + shares)/totalLikes);
   },
 
-  insertArr: function(data){
-
-  }
-
   inArr: function(val){
     for(var i=0;i<PublicTrending.keys.length;i++){
       if(keys[i].key == val){
@@ -86,12 +82,15 @@ var PublicTrending = {
                 totalPercentEng : PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]);
                 avgEng : PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]);
               }
-              insertArr(temp);
+              PublicTrending.keys.push(temp);
             }
           }
         }
       }
     }
+    PublicTrending.keys.sort(function(a,b){
+      return a.trendVal - b.trendVal;
+    });
     return PublicTrending.keys;
   }
 };
