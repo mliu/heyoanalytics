@@ -26,13 +26,16 @@ console.log('FB sdk loaded.');
     console.log(response);
     if(response.authResponse){
       //Get Pages, have user choose which one to analyze
-      FB.api('/me/accounts?fields=name,id', function(res){
-        console.log('got FB.api(/me) response , ', res);
+      var url = '/me/accounts?fields=' +
+                'name,id,likes,username,founded,about';
+                
+      FB.api(url, function(res){
+        console.log('got users FB pages: ', res);
         UI.addPages(res.data);
       });
     }
     else{
-      document.getElementById('main-content').innerHTML = "Failed to load User Pages"
+      $('#error').html("Failed to load User Pages");
     }
   }, {scope: 'manage_pages, publish_stream, read_insights'});
   
