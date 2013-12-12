@@ -12,7 +12,6 @@ input{
 }
 
 .bar{
-  width:370px;
   position:absolute;
   top:0;
   right:0;
@@ -39,6 +38,10 @@ input{
 .level2{z-index: 2;}
 .level3{z-index: 3;}
 .level4{z-index: 4;}
+
+.size1{max-width: 100px; max-height: 80px;}
+.size2{max-width: 200px; max-height: 160px;}
+.size3{max-width: 300px; max-height: 240px;}
 
 .page{
   background: #f2f2f2;
