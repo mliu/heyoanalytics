@@ -42,6 +42,7 @@ body{
 .bg4{background: #FF6600;}    /* Heyo orange */
 
 .border1{border: 1px solid #e3e3e3;}
+.border2{border-bottom:  1px solid orange;}
 
 .color1{color:#f5f5f5;}
 .color2{color:#BABCBE;}

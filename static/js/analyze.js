@@ -400,22 +400,22 @@ Data = {
   */
 
   mergeKeywordData: function(data, id, likes, comments, shares, message){
-    if(!Data.trendPosts.hasOwnProperty(data[keyword])){
-      Data.trendPosts[data[keyword]] = [];
+    if(!Data.trendPosts.hasOwnProperty(data.keyword)){
+      Data.trendPosts[data.keyword] = [];
     }
-    Data.trendPosts[data[keyword]].push({
+    Data.trendPosts[data.keyword].push({
       message: message,
-      avgEng: data[avgEng], //Heyo Points
+      avgEng: data.avgEng, //Heyo Points
       likes: likes,
       url: "http://facebook.com/" + id,
       comments: comments,
       shares: shares
     });
-    Data.trendPosts[data[keyword]].sort(function(a,b){
+    Data.trendPosts[data.keyword].sort(function(a,b){
       return a.avgEng - b.avgEng;
     });
-    if(Data.trendPosts[data[keyword]].length > 10){
-      Data.trendPosts[data[keyword]].splice(10, 1);
+    if(Data.trendPosts[data.keyword].length > 10){
+      Data.trendPosts[data.keyword].splice(10, 1);
     }
   },
    

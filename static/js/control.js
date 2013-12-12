@@ -67,6 +67,7 @@ $(document).on('click mouseover', '.trend', function(){
 });
 
 //get posts on crunch button
+var lastbatch; //lastbatch is for testing.
 $(document).on('click', '#getPosts', function(){
     var keywords = Data.keyWordQuery();
     if (!keywords.length) {
@@ -108,6 +109,7 @@ $(document).on('click', '#getPosts', function(){
             Request.batchByID({IDs:objIds, since:timeSince}, function(data){
                 UI.loaded();
                 console.log('got batch back ', data);
+                lastbatch = data;
             });
         }
     );
