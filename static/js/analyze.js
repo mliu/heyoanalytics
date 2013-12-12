@@ -11,7 +11,9 @@ var PublicTrending = {
   },
 
   getLikes: function(str){
-    var temp = str.replace("https://graph.facebook.com/").substr(0, temp.indexOf("/"));
+    var temp = str.replace("https://graph.facebook.com/",''),
+        temp = temp.substr(0, temp.indexOf("/"));
+        
     if(temp == str){
       console.log("error, could not retrieve ID string");
       return "-1";
@@ -29,8 +31,8 @@ var PublicTrending = {
   },
 
   inArr: function(val){
-    for(var i=0;i<PublicTrending.keys.length;i++){
-      if(keys[i].key == val){
+    for(var i=0;i<this.keys.length;i++){
+      if(this.keys[i].key == val){  //forgot this.
         return i;
       }
     }
@@ -42,47 +44,65 @@ var PublicTrending = {
   //trendVal gives higher weighting to keywords used more often that
   //are more recent
   getTrending: function(data){
+    
     var id = "";
-    var index = -1;
-    var likes = 0;
-    var shares = 0;
-    var temp = {};
-    for(obj in data){
-      for(post in obj[data]){
-        if(post.hasOwnProperty("message")){
-          arr = Data.popularKeys(post);
-          if(post.hasOwnProperty(likes)){
-            likes = post[likes][summary][total_count];
+        index = -1,
+        likes = 0,
+        shares = 0,
+        comments = 0,
+        temp = {};
+        
+    console.log(data);
+    //each page
+    for(obj in data){     //JS doesn't do loops like python
+      
+      var o = data[obj];    //my fix
+      
+      //console.log('forloop1 ', obj);
+      for(post in data[obj].data){    //each post
+        console.log('forloop 2', post);
+        
+        var p = data[obj].data[post];
+        
+        if(p.hasOwnProperty("message")){    //e
+          arr = Data.popularKeys([p]);
+          /*if(p.hasOwnProperty('likes')){
+            likes = p.likes.summary.total_count;
           }else{
             likes = 0;
-          }
-          if(post.hasOwnProperty(comments)){
-            comments = post[comments][summary][total_count];
+          }*/
+          likes = p.likes ? p.likes.summary.total_count : 0;  //conditional statement
+          /*if(p.hasOwnProperty(comments)){
+            comments = p.comments.summary.total_count;
           }else{
             comments = 0;
-          }
-          if(post.hasOwnProperty(shares)){
-            shares = post[shares][summary][total_count];
+          }*/
+          comments = p.comments ? p.comments.summary.total_count : 0;
+          
+          /*if(p.hasOwnProperty(shares)){
+            shares = p[shares][summary][total_count]; //forgot quotes.
           }else{
             shares = 0;
-          }
+          }*/
+          shares = p.shares || 0;
+          
           for(word in arr.posts){
-            index = inArr(word);
+            index = this.inArr(word);   //forgot this. keyword
             if(index > 0){
-              temp = PublicTrending.keys[index];
-              temp[trendVal] += PublicTrending.getTrendVal(post[created_time]);
+              temp = this.keys[index];
+              temp[trendVal] += this.getTrendVal(p[created_time]);
               temp[count]++;
-              id = PublicTrending.getLikes(obj[paging][next])
-              temp[totalPercentEng] += PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]);
+              id = this.getLikes(o.paging.next)   //forgot a lot of quotes haha. changed to dot syntax.
+              temp[totalPercentEng] += this.getPercentEng(likes, comments, shares, this.IDs[id]);
               temp[avgEng] = temp[totalPercentEng] / temp[count];
             }else{
-              id = PublicTrending.getLikes(obj[paging][next]);
+              id = this.getLikes(o.paging.next);
               temp = {
                 keyword : word,
-                trendVal : PublicTrending.getTrendVal(post[created_time]),
+                trendVal : this.getTrendVal(p.created_time),
                 count : 1,
-                totalPercentEng : PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]),
-                avgEng : PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id])
+                totalPercentEng : this.getPercentEng(likes, comments, shares, this.IDs[id]),
+                avgEng : this.getPercentEng(likes, comments, shares, this.IDs[id])
               }
             }
             Data.mergeKeywordData(temp, likes, comments, shares, post["message"]);
@@ -91,17 +111,18 @@ var PublicTrending = {
         }
       }
     }
-    PublicTrending.keys.sort(function(a,b){
+    this.keys.sort(function(a,b){
       return a.trendVal - b.trendVal;
     });
-    return PublicTrending.keys;
+    return this.keys;
   }
 };
+
+
 
 var Request = {
   keys : [],
   IDs : [],
-
   /*
     Retrieves all posts from pages with a certain keyword
     Appends array of posts objects under key
@@ -133,7 +154,6 @@ var Request = {
         Request.keys[params.query] = res.data;
         callback(res.data);
       });
-      return Request.keys[key]
     }
   },
 
@@ -231,14 +251,15 @@ var UI = {
     var kw = $('#keywordTemplate').clone();
     kw.attr('id','');
     kw.find('.glyphicon-ok').remove();
-    kw.find('input.keyword').val(keyword);
-    kw.find('input.keyword').attr('readonly',true);
+    kw.find('input.keywordQuery').val(keyword);
+    //kw.find('input.keywordQuery').attr('readonly',true);
     
     $('#keywordWrap').prepend(kw);
   },
-  /* clear key words enterd */
+  
+  /* clear key words enterd in query table*/
   clearKeyWords: function(){
-    $('.keyword').each(function(){
+    $('.keywordQuery').each(function(){
       if (!($(this).parents('.inputWrap').attr('id') == 'keywordTemplate')){
         $(this).parents('.inputWrap').remove();
       }
@@ -252,13 +273,20 @@ var UI = {
   */
   popup: function(title, message, options){
     options = options || {};
+    $('#popupSpace').find('.popup').remove();
     var popup = $($('#popupTemplate').html());
     popup.find('.title').html(title);
     popup.find('.message').html(message);
-    if (options.error) {
+    
+    if (options.error) 
       popup.find('.title').addClass('red');
+    
+    if (options.white) {
+      popup.css('background','white');
+      popup.css('color','black');
     }
-    $('body').append(popup);
+    $('#popupSpace').append(popup);
+    popup.show('fast');
     
     setTimeout(function(){
       if (options.millis) {
@@ -275,18 +303,96 @@ var UI = {
   loaded: function(){
     $('#load').hide();
   },
-  /*
-    Display keywords for given array
+
+  /* Add a trend as an entry to result table
+   
+    *Make sure the keys match obj.
     
+    @param trends - array
   */
-  topKeyWords: function(array, options){
+  addTrends: function(params){
+    params = params || {};
+    var html;
+    if ($('#noResults').length) $('#noResults').hide();
+    for (var i in params.trends) {
+      html = '<tr class="trendEntry">' +
+                    '<td><strong class="keyword trend clicker">' + params.trends[i].keyword + '</strong></td>' +
+                    '<td class="heyoPoints"> ' + params.trends[i].trendVal + ' </td>' + //heyo points
+                    '<td class="engagement"> ' + params.trends[i].avgEng + '% </td>' +
+              '</tr>';
+      $('#trendBody').append(html);
+    }
+    return html;
+  },
+  /*
+    Wipe the trends in trend table.
+  */
+  clearTrends: function(){
+    $('.trendEntry').remove();
+    $('#noResults').show('fast');
+    return 1;
+  },
+  
+  /*
+    Show trending posts in popup
     
+    *Set postArray equal to array containing all posts.
+    
+    @pOptions - same options for popup.
+  */
+  showPosts: function(key, pOptions){
+    pOptions = pOptions || { white: true };
+    //Set this to correct path.
+    var postArray = Data.trendPosts;
+    
+    if (!postArray[key]) {
+      console.log('key doesn\'t exist');
+      return {};
+    }
+    var table = $($('#trendPostTemplate').html());
+    for (var i in postArray[key]) {
+      postArray[key][i] = postArray[key][i] || {};
+      var message = postArray[key][i].message,
+          message = message ? message : '';
+      var comments = postArray[key][i].comment_count,
+          comments = comments ? comments : 0;
+      var likes = postArray[key][i].like_count,
+          likes = likes ? likes : 0;
+      var html = '<tr class="trendPost">' +
+                    '<td><strong>' + message + '</strong></td>' +
+                    '<td class="comments"> ' + comments + ' </td>' +
+                    '<td class="likes"> ' + likes + ' </td>' +
+                  '</tr>';
+      table.append(html);
+    }
+    this.popup('Trending Posts for '+key, table, pOptions);
+    return table;
+  },
+  
+  //testing
+  testTrends: function(){
+    var entry;
+    var trends = [];
+    for (var i = 0; i <6; i++){
+      trends.push({keyword: 'test'+i, avgEng:i, trendVal:Math.floor(Math.random() * 150)});
+      Data.trendPosts['test'+i] = [];
+        for (var n=0; n<5; n++){
+          Data.trendPosts['test'+i].push( {
+            message: 'a message for test'+i+' and post'+n,
+            like_count:Math.floor(Math.random() * 250),
+            comment_count:Math.floor(Math.random() * 50)
+          });
+      }
+    }
+    this.addTrends({trends:trends});
+    return trends;
   }
   
 };
+
 Data = {
-  trendPosts : {},
   stopWords:[],
+  trendPosts : {},
   /*
     Finds popular words for given blob of text.
     Sorts by frequency.  No duplicates.
@@ -321,7 +427,7 @@ Data = {
       
       for (k in keys) {
         keys[k] = keys[k].toLowerCase();  //format keys.  Best move this to postBlob
-
+        //if (!keys[k])continue;
         if (keys[k] == '' || keys[k].indexOf('http') != -1) {
           continue;
         }
@@ -402,12 +508,12 @@ Data = {
     }
   },
   /*
-    Returns array of keywords in keyword wrap on page.
+    Returns array of query keywords in keyword wrap on page.
   */
   keyWordQuery: function(){
     var keywords = [];
   
-    $('.keyword').each(function(){
+    $('.keywordQuery').each(function(){
       if (!($(this).parents('.inputWrap').attr('id') == 'keywordTemplate')){
         
         keywords.push($(this).val());
@@ -416,4 +522,4 @@ Data = {
     
     return keywords;
   }
-}
+};

@@ -25,6 +25,8 @@ body{
   left:0;
 }
 
+.clicker{cursor: pointer;}
+
 .abs{position: absolute;}
 .rel{position: relative;}
 .fixed{position: fixed;}
@@ -32,10 +34,12 @@ body{
 .white{color:white;}
 .green{color:green;}
 .red{color:red;}
+.orange{color:#ff6600;}
 
 .bg1{background: #f5f5f5;}
 .bg2{background: #BABCBE;}
 .bg3{background: #333;}
+.bg4{background: #FF6600;}    /* Heyo orange */
 
 .border1{border: 1px solid #e3e3e3;}
 
@@ -80,14 +84,18 @@ body{
 .glyphicon:hover{
   cursor: pointer;
 }
+/*#popupSpace{  top:20px;left:20px;}*/
 .popup{
-  top:20px;
-  left:20px;
+   top:20px;left:20px;
   min-height: 100px;
   min-width: 200px;
 }
 .popup message{
   
+}
+
+.keyword{
+  border-bottom: 1px dotted #999;
 }
 #list ul{
   margin-left:auto;

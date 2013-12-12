@@ -25,7 +25,6 @@ animation: orbit 7.15s infinite;
 position: absolute;
 width: 3px;
 height: 3px;
-background: #FF6600;
 left:0px;
 top:0px;
 -moz-border-radius: 3px;
