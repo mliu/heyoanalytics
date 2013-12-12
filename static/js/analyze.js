@@ -11,13 +11,15 @@ var PublicTrending = {
   },
 
   getLikes: function(str){
-    var temp = str.replace("https://graph.facebook.com/").substr(0, temp.indexOf("/"));
+    var temp = str.replace("https://graph.facebook.com/",''),
+        temp = temp.substr(0, temp.indexOf("/"));
+        
     if(temp == str){
       console.log("error, could not retrieve ID string");
       return "-1";
     }else{
       FB.api('/' + temp, function(res){
-        PublicTrending.IDs[temp] = res.likes;
+        this.IDs[temp] = res.likes;
       });
     }
     return temp;
@@ -29,8 +31,8 @@ var PublicTrending = {
   },
 
   inArr: function(val){
-    for(var i=0;i<PublicTrending.keys.length;i++){
-      if(keys[i].key == val){
+    for(var i=0;i<this.keys.length;i++){
+      if(this.keys[i].key == val){  //forgot this.
         return i;
       }
     }
@@ -42,58 +44,76 @@ var PublicTrending = {
   //trendVal gives higher weighting to keywords used more often that
   //are more recent
   getTrending: function(data){
+    
     var id = "";
-    var index = -1;
-    var likes = 0;
-    var shares = 0;
-    var temp = {};
-    for(obj in data){
-      for(post in obj[data]){
-        if(post.hasOwnProperty("message")){
-          arr = Data.popularKeys(post);
-          if(post.hasOwnProperty(likes)){
-            likes = post[likes][summary][total_count];
+        index = -1,
+        likes = 0,
+        shares = 0,
+        comments = 0,
+        temp = {};
+        
+    console.log(data);
+    //each page
+    for(obj in data){     //JS doesn't do loops like python
+      
+      var o = data[obj];    //my fix
+      
+      //console.log('forloop1 ', obj);
+      for(post in data[obj].data){    //each post
+        console.log('forloop 2', post);
+        
+        var p = data[obj].data[post];
+        
+        if(p.hasOwnProperty("message")){    //e
+          arr = Data.popularKeys([p]);
+          /*if(p.hasOwnProperty('likes')){
+            likes = p.likes.summary.total_count;
           }else{
             likes = 0;
-          }
-          if(post.hasOwnProperty(comments)){
-            comments = post[comments][summary][total_count];
+          }*/
+          likes = p.likes ? p.likes.summary.total_count : 0;  //conditional statement
+          /*if(p.hasOwnProperty(comments)){
+            comments = p.comments.summary.total_count;
           }else{
             comments = 0;
-          }
-          if(post.hasOwnProperty(shares)){
-            shares = post[shares][summary][total_count];
+          }*/
+          comments = p.comments ? p.comments.summary.total_count : 0;
+          
+          /*if(p.hasOwnProperty(shares)){
+            shares = p[shares][summary][total_count]; //forgot quotes.
           }else{
             shares = 0;
-          }
+          }*/
+          shares = p.shares || 0;
+          
           for(word in arr.posts){
-            index = inArr(word);
+            index = this.inArr(word);   //forgot this. keyword
             if(index > 0){
-              temp = PublicTrending.keys[index];
-              temp[trendVal] += PublicTrending.getTrendVal(post[created_time]);
+              temp = this.keys[index];
+              temp[trendVal] += this.getTrendVal(p[created_time]);
               temp[count]++;
-              id = PublicTrending.getLikes(obj[paging][next])
-              temp[totalPercentEng] += PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]);
+              id = this.getLikes(o.paging.next)   //forgot a lot of quotes haha. changed to dot syntax.
+              temp[totalPercentEng] += this.getPercentEng(likes, comments, shares, this.IDs[id]);
               temp[avgEng] = temp[totalPercentEng] / temp[count];
             }else{
-              id = PublicTrending.getLikes(obj[paging][next]);
+              id = this.getLikes(o.paging.next);
               temp = {
                 keyword : word,
-                trendVal : PublicTrending.getTrendVal(post[created_time]),
+                trendVal : this.getTrendVal(p.created_time),
                 count : 1,
-                totalPercentEng : PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]),
-                avgEng : PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id])
+                totalPercentEng : this.getPercentEng(likes, comments, shares, this.IDs[id]),
+                avgEng : this.getPercentEng(likes, comments, shares, this.IDs[id])
               }
-              PublicTrending.keys.push(temp);
+              this.keys.push(temp);
             }
           }
         }
       }
     }
-    PublicTrending.keys.sort(function(a,b){
+    this.keys.sort(function(a,b){
       return a.trendVal - b.trendVal;
     });
-    return PublicTrending.keys;
+    return this.keys;
   }
 };
 
@@ -344,7 +364,7 @@ var UI = {
                   '</tr>';
       table.append(html);
     }
-    this.popup('Trending Posts', table, pOptions);
+    this.popup('Trending Posts for '+key, table, pOptions);
     return table;
   },
   
@@ -354,9 +374,9 @@ var UI = {
     var trends = [];
     for (var i = 0; i <6; i++){
       trends.push({keyword: 'test'+i, avgEng:i, trendVal:Math.floor(Math.random() * 150)});
-      testObj.trendPosts['test'+i] = [];
+      Data.trendPosts['test'+i] = [];
         for (var n=0; n<5; n++){
-          testObj.trendPosts['test'+i].push( {
+          Data.trendPosts['test'+i].push( {
             message: 'a message for test'+i+' and post'+n,
             like_count:Math.floor(Math.random() * 250),
             comment_count:Math.floor(Math.random() * 50)
@@ -386,7 +406,7 @@ Data = {
       
       for (k in keys) {
         keys[k] = keys[k].toLowerCase();  //format keys.  Best move this to postBlob
-
+        //if (!keys[k])continue;
         if (keys[k] == '' || keys[k].indexOf('http') != -1) {
           continue;
         }
