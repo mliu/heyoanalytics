@@ -1,51 +1,6 @@
-console.log('JS loaded.');
-window.fbAsyncInit = function() {
-  // init the FB JS SDK
-  FB.init({
-    appId      : Settings.appId,                        // App ID from the app dashboard
-    status     : true,                                 // Check Facebook Login status
-    xfbml      : true                                  // Look for social plugins on the page
-  });
-
-  FB.Event.subscribe('auth.authResponseChange', function(response) {
-    if (response.status === 'connected') {
-    } else if (response.status === 'not_authorized') {
-      FB.login({scope:'manage_pages, publish_stream'});
-    } else {
-      FB.login({scope:'manage_pages, publish_stream'});
-    }
-  });
-
-  FB.login(function(response){
-    console.log(response);
-    if(response.authResponse){
-      //Get Pages, have user choose which one to analyze
-      FB.api('/me/accounts?fields=name,id', function(res){
-        console.log('got FB.api(/me) response , ', res);
-        UI.addPages(res.data);
-      });
-    }
-    else{
-      document.getElementById('main-content').innerHTML = "Failed to load User Pages"
-    }
-  }, {scope: 'manage_pages, publish_stream, read_insights'});
-  
-};
-
-// Load the SDK asynchronously
-(function(d, s, id){
-  console.log('async loading');
-   var js, fjs = d.getElementsByTagName(s)[0];
-   if (d.getElementById(id)) {return;}
-   js = d.createElement(s); js.id = id;
-   js.src = "//connect.facebook.net/en_US/all.js";
-   fjs.parentNode.insertBefore(js, fjs);
- }(document, 'script', 'facebook-jssdk'));
-
-var Request = {
-  keys : [],
-  IDs : [],
-  trend : {},
+var PublicTrending = {
+  keys = {},
+  IDs = {},
 
   //Returns keywords of a message
   getKeywords: function(message){
@@ -94,57 +49,41 @@ var Request = {
     }
   },
 
-  //Retrieves all posts from pages with a certain keyword
-  //Appends array of tuples of posts under key
-  pullByKeyword: function(key){
-    if(Request.keys.indexOf(key) !== -1){
-      return Request.keys[key];
-    }
-    else{
+  pullByKeyword: function(key, callback){
+    
+    typeof callback != 'function' ? console.log('error callback is not a function.') : '';
+    
+    if(PublicTrending.keys.hasOwnProperty(key){
+        callback(PublicTrending.keys[key]);
+    }else{
       FB.api('/search?q=' + key + '&type=page', function(res){
-        var data = [];
-        for(page in res.data){
-          pullReceptionData(page.id)
-          data.concat(Request.pullByID(page.id));
+        for(page in res.data){          
+          PublicTrending.pullByID(page.id), function(data){
+            PublicTrending.IDs[page.id] = data;
+          }); //You need a callback function.
         }
-        Request.keys[key] = data;
       });
-      return Request.keys[key]
     }
   },
 
-  //Retrieves all posts and their reception info for a page
-  //Returns array of tuples with data of every post
-  pullByID: function(id, params){
-    if(Request.IDs.indexOf(id) !== -1) return Request.IDs[id];
-    params = params || '';
+  pullByID: function(id, callback){
+    if(Request.IDs.indexOf(id) !== -1){
+      return Request.IDs[id];
+    }
+    else{
       var reception = 0, post;
       FB.api('/' + id, function(res){
         Request.IDs[id] = {};
-        if(res.hasOwnProperty("likes")){
-          Request.IDs[id]["likes"] = res.likes;
-        }
-        else{
-          Request.IDs[id]["likes"] = 0;
-        }
+        Request.IDs[id]["likes"] = res.likes;
       });
-      var url = '/'+ id + '/posts?fields=created_time,likes,comments,message'+params;
       //FQL query for getting all posts and specific fields
-<<<<<<< HEAD
-      FB.api('/'+ id + '/posts?fields=created_time,likes,comments,message,story', function(res){
+      FB.api('/'+ id + '/posts?fields=created_time,likes,comments,message', function(res){
         var data = [];
         for(post in res.data){
-          if(post.indexOf("story") !== -1){
-            continue;
-          }
           //Create temp object
           var temp = {};
           //Parse created_time string to get day of week and time
-          var s = post["created_time"];
-          var d = days[new Date(s).getDay()];
-          temp["created_time"] = s
-          temp["time"] = s.slice(11,18);
-          temp["day"] = d;
+          temp["time"] = post["created_time"];
           //Add post message
           if(post.indexOf("message") !== -1){
             temp["message"] = post["message"];
@@ -159,19 +98,74 @@ var Request = {
           }
           //If shares exist, add total
           if(post.indexOf("shares") !== -1){
-            temp["shares_count"] = post["shares"]["count"].length;
+            temp["shares_count"] = post["shares"]["count"];
           }
           //Push completed object for that specific post onto data array
           data.push(temp);
         }
-        Request.IDs[id]["data"] = data;
-=======
-      FB.api('/'+ id + '/posts?fields=created_time,likes,comments,message', function(res){
-        Data.findKeys(res.data);
-        Request.IDs[id]["data"] = res.data;
->>>>>>> e222afa70540d43f737448e0a78d07b936e45e48
+        callback(data);
       });
-    return Request.IDs[id];
+    }
+  }//end pullbyid
+};
+
+var Request = {
+  keys : [],
+  IDs : [],
+
+  /*
+    Retrieves all posts from pages with a certain keyword
+    Appends array of tuples of posts under key
+  */
+  pullByKeyword: function(key, callback){
+    
+    typeof callback != 'function' ? console.log('error callback is not a function.') : '';
+    
+    if(Request.keys.indexOf(key) !== -1){
+        callback(res.data);
+    }else{
+      FB.api('/search?q=' + key + '&type=page', function(res){
+        /*var data = []; // Can we keep the whole data object?
+        for(page in res.data){
+          pullReceptionData(page.id)
+          
+          //data.concat(Request.pullByID(page.id)); //You need a callback function.
+        }
+        Request.keys[key] = data;*/
+        Request.keys[key] = res.data;
+        callback(res.data);
+      });
+      return Request.keys[key]
+    }
+  },
+
+  //Retrieves all posts and their reception info for a page
+  //Returns array of tuples with data of every post
+  pullByID: function(id, params, callback){
+    if(Request.IDs.indexOf(id) !== -1) callback(Request.IDs[id]);
+    else{
+      params = params || '';
+        var reception = 0, post;
+        Request.IDs[id] = {};
+        FB.api('/' + id, function(res){
+          Request.IDs[id]["likes"] = res.likes;
+        });
+        var url = '/'+ id + '/posts?fields=created_time,likes,comments,message'+params;
+        //FQL query for getting all posts and specific fields
+        FB.api('/'+ id + '/posts?fields=created_time,likes,comments,message', function(res){
+          var keys = Data.popularKeys(res.data);
+          console.log('popular words for posts are');
+          for (i in keys.posts) {
+            console.log(keys.posts[i][1], keys.posts[i][0]);
+          }
+          console.log('popular words for comments are');
+          for (i in keys.comments) {
+            console.log(keys.comments[i][1], keys.comments[i][0]);
+          }
+          Request.IDs[id]["data"] = res.data;
+          callback(Request.IDs[id]);
+        });
+    }
   }//end pullbyid
 };
   
@@ -182,6 +176,15 @@ $(document).on('click', '.page', function(){
   var id = this.id.replace('page', '');
   var since = Math.floor((new Date().getTime() - 1000*60*60*24*days)/1000);
   Request.pullByID(id, '&since='+since);
+});
+
+//event listener for getting page info by keyword
+$(document).on('click', '#findPages', function(){
+  var keyword = $.trim($('#keyword').val());
+  if (keyword == '') return;
+  Request.pullByKeyword(keyword, function(data){
+    console.log('got pages back', data);
+  });
 });
 
 var UI = {
@@ -202,43 +205,114 @@ var UI = {
     return pages;
   },
   
-  topKeyWords: function(){
+  /*
+    Display keywords for given array
+    
+  */
+  topKeyWords: function(array, options){
     
   }
   
 };
 Data = {
+
   stopWords:[],
   /*
-    Finds popular words for given FB response data.
+    Finds popular words for given blob of text.
+    Sorts by frequency.  No duplicates.
+    Ignores words in stopWords array.
   */
-  findKeys:function(data){  
+  sortText:function(text){  
     var mKeys = [];
-    var cKeys = [];
-
-    for (post in data) {                      //add keywords as keys to mKeys and cKeys
-      if (!data[post].message) continue; 
-      var keys = data[post].message.split(' '); 
+    var found = false;
+    console.log('text',text);
+      
+      var keys = text.split(' ');
+      
       for (k in keys) {
-        if (mKeys[keys[k]]){
-          mKeys[keys[k]]++
-        }else{
-          mKeys[keys[k]] = 1;
+        keys[k] = keys[k].toLowerCase();  //format keys.  Best move this to postBlob
+        keys[k] = keys[k].replace('.', '');
+        keys[k] = keys[k].replace(',', '');
+        keys[k] = keys[k].replace('\'', '');
+        keys[k] = keys[k].replace('\"', '');
+        keys[k] = keys[k].replace('?', '');
+        keys[k] = keys[k].replace('!', '');
+        if (keys[k] == '') {
+          continue;
         }
+        if (this.stopWords.indexOf(keys[k]) != -1) continue;
+        
+        // Increment key if already exists.
+        for (i in mKeys) {
+          if (mKeys[i][0] == keys[k]) {
+            mKeys[i][1]++;
+            var found = true;
+            break;
+          }
+        }
+        // add key if it doesn't
+        if (!found){
+          var tuple = [keys[k], 1];
+          mKeys.push(tuple);
+        }else{
+          found = false;
+        }
+      
+    }
+
+    mKeys.sort(function(a,b){ //sort in descending order.
+      a = a[1];
+      b = b[1];
+      return (a > b ? 0 : 1);
+    });
+
+    return mKeys;
+  },
+  
+  /* Takes FB data object and concatenates post bodies and comments
+    into word blob.  for finding word frequncies.
+    returns obj. */
+  postBlob: function(data){
+    console.log('blobbing data tree', data);
+    var postBlob = '';
+    var commentBlob ='';
+    
+    for (post in data) {
+      
+      if (data[post].comments) {
+        
+        for (c in data[post].comments.data){
+          if (!data[post].comments.data[c].message) continue;
+          commentBlob += ' ' + data[post].comments.data[c].message;
+        }
+        
       }
+      if (!data[post].message) continue; 
+      postBlob += ' ' + data[post].message;
     }
     
-    mKeys.sort();
-    
-    for (s in this.stopWords) {         //remove junk words
-      if (mKey[this.stopWords[s]]) {
-        mKey.splice(this.stopWords[s], 1);
-      }
-    }
-    
-    console.log('Most popular words in order are :');
-    for (i in mKeys) {
-      console.log(i);
+    return {
+      postBlob:postBlob,
+      commentBlob: commentBlob
+    };
+  },
+  
+  /*
+    control function for returning sorted array for
+    keys in fb response data object
+  */
+  popularKeys:  function(data){
+    try{
+      var blob = this.postBlob(data);
+      var postKeys = this.sortText(blob.postBlob);
+      var commentKeys = this.sortText(blob.commentBlob);
+      return{
+        posts: postKeys,
+        comments: commentKeys
+      };
+    }catch(e){
+      console.log('Error getting keys.  Make sure you gave correct data object.', e);
+      return {};
     }
   }
 }
