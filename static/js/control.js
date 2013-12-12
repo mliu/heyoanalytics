@@ -57,8 +57,9 @@ $(document).on('click', '.glyphicon-remove', function(){
     var input = $(this).siblings('input.keyword');
     input.val('');
     if (wrap.attr('id') == 'keywordTemplate') return;    //don't remove template.
-
-    wrap.remove();
+    var animate = 300;
+    wrap.hide(animate);
+    setTimeout(function(){ wrap.remove() }, animate);
 });
 
 //close a popup
@@ -91,8 +92,7 @@ $(document).on('click', '#getPosts', function(){
     
     Request.pullByKeyword({
         query:query,
-        object:object,
-        since:timeSince
+        object:object
         },
         function(objects){
             console.log('objects returned ', objects);
@@ -107,11 +107,10 @@ $(document).on('click', '#getPosts', function(){
                 }
             }
             //another async call
-            Request.batchByID({IDs:objIds}, function(data){
+            Request.batchByID({IDs:objIds, since:timeSince}, function(data){
                 UI.loaded();
                 console.log('got batch back ', data);
             });
-            
         }
     );
     

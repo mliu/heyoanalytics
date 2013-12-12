@@ -46,7 +46,7 @@ var Request = {
 
   /*
     Retrieves all posts from pages with a certain keyword
-    Appends array of tuples of posts under key
+    Appends array of posts objects under key
     
     @param key - string to query search by
     @param object - type of fb object to search e.g. page, event, post
@@ -60,7 +60,11 @@ var Request = {
     if(Request.keys.indexOf(params.query) !== -1){
         callback(res.data);
     }else{
-      FB.api('/search?q=' + params.query + '&type='+params.object, function(res){
+      var url = '/search?q=' + params.query + '&type='+params.object;
+      if (params.object == 'page') {
+        url += '&fields=best_page';
+      }
+      FB.api(url, function(res){
         /*var data = []; // Can we keep the whole data object?
         for(page in res.data){
           pullReceptionData(page.id)
@@ -79,7 +83,6 @@ var Request = {
      returns FB response data obj.
      
     @param id - id of page
-    @param since - unix timestamp to restrict query 
   */
   pullByID: function(params, callback){
     params = params || {};
@@ -108,15 +111,19 @@ var Request = {
   /* Make multiple api calls with multiple IDs. Parses JSON and returns array of objs
   
     @param IDs - array of ids to get
+    @param since - unix timestamp to restrict query 
   */
   batchByID: function(params, callback){
     params = params || {};
     callback = callback || function(e){console.log('Warning: no callback specified.')};
     var batch = [];
     for (var i in params.IDs) {
+      var url = params.IDs[i] + '/posts?fields=likes.summary(true),comments.summary(true),message,name,status_type,shares';
+      if (params.since) url +=  '&since=' + params.since 
       batch.push({
         method:'GET',
-        relative_url:params.IDs[i] + '/feed?fields=likes,comments,message,name'
+        relative_url:url,
+        summary:1
       });
     }
     console.log('batch obj',batch);
