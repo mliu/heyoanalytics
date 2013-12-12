@@ -1,22 +1,9 @@
 var PublicTrending = {
-  keys = {},
-  IDs = {},
-
-  //Returns keywords of a message
-  getKeywords: function(message){
-    res = [];
-    arr = message.split(" ");
-    for(word in arr){
-      if(Data.stopWords.indexOf(word) !== -1){
-        res.append(word);
-      }
-    }
-    return res;
-  },
+  keys : {},
 
   //Calculates trendVal from a given date string
   getTrendVal: function(date){
-
+    
   },
 
   calculateReception: function(post){
@@ -24,7 +11,7 @@ var PublicTrending = {
   },
 
   //Calculates percent engagement given likes and reception <=
-  getPercentEng: function(likes, reception){
+  getPercentEng: function(likes, comments, shares, reception){
 
   },
 
@@ -32,81 +19,25 @@ var PublicTrending = {
   //object with keys:keywords and values:trendVal,totalPercentEng,count
   //trendVal gives higher weighting to keywords used more often that
   //are more recent
-  getTrending: function(key){
-    data = pullByKeyword(key);
+  getTrending: function(data){
     temp = {};
-    for(post in data){
-      if(post["data"].indexOf("message") !== -1){
-        arr = getKeywords(post["data"]["message"])
-        for(word in arr){
+    for(obj in data){
+      for(post in obj[data]){
+        arr = Data.popularKeys(post)
+        for(word in arr.posts){
           if(temp.hasOwnProperty(word)){
-            temp["trendVal"] += getTrendVal(post["data"]["created_time"]);
-            temp["count"]++;
-            temp["totalPercentEng"] += getPercentEng(post["likes"], calculateReception(post["data"]))
+            temp[trendVal] += getTrendVal(post[created_time]);
+            temp[count]++;
+            temp[totalPercentEng] += getPercentEng(post[likes], calculateReception(post["data"]))
+          }else{
+            temp[word] = {
+              trendVal : getTrendVal(post[data])
+            }
           }
         }
       }
     }
-  },
-
-  pullByKeyword: function(key, callback){
-    
-    typeof callback != 'function' ? console.log('error callback is not a function.') : '';
-    
-    if(PublicTrending.keys.hasOwnProperty(key){
-        callback(PublicTrending.keys[key]);
-    }else{
-      FB.api('/search?q=' + key + '&type=page', function(res){
-        for(page in res.data){          
-          PublicTrending.pullByID(page.id), function(data){
-            PublicTrending.IDs[page.id] = data;
-          }); //You need a callback function.
-        }
-      });
-    }
-  },
-
-  pullByID: function(id, callback){
-    if(Request.IDs.indexOf(id) !== -1){
-      return Request.IDs[id];
-    }
-    else{
-      var reception = 0, post;
-      FB.api('/' + id, function(res){
-        Request.IDs[id] = {};
-        Request.IDs[id]["likes"] = res.likes;
-      });
-      //FQL query for getting all posts and specific fields
-      FB.api('/'+ id + '/posts?fields=created_time,likes,comments,message', function(res){
-        var data = [];
-        for(post in res.data){
-          //Create temp object
-          var temp = {};
-          //Parse created_time string to get day of week and time
-          temp["time"] = post["created_time"];
-          //Add post message
-          if(post.indexOf("message") !== -1){
-            temp["message"] = post["message"];
-          }
-          //If comments exist, count and add
-          if(post.indexOf("comments") !== -1){
-            temp["comments_count"] = post["comments"]["data"].length;
-          }
-          //If likes exist, count and add
-          if(post.indexOf("likes") !== -1){
-            temp["likes_count"] = post["likes"]["data"].length;
-          }
-          //If shares exist, add total
-          if(post.indexOf("shares") !== -1){
-            temp["shares_count"] = post["shares"]["count"];
-          }
-          //Push completed object for that specific post onto data array
-          data.push(temp);
-        }
-        callback(data);
-      });
-    }
-  }//end pullbyid
+  }
 };
 
 var Request = {
