@@ -10,7 +10,7 @@ var PublicTrending = {
     return 5000000000/diff;
   },
 
-  getLikes: function(str, callback){
+  getLikes: function(str){
     var temp = str.replace("https://graph.facebook.com/").substr(0, temp.indexOf("/"));
     if(temp == str){
       console.log("error, could not retrieve ID string");
