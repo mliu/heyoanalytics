@@ -19,7 +19,7 @@ var PublicTrending = {
       return "-1";
     }else{
       FB.api('/' + temp, function(res){
-        this.IDs[temp] = res.likes;
+        PublicTrending.IDs[temp] = res.likes;
       });
     }
     return temp;
