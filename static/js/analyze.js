@@ -1,5 +1,5 @@
 var PublicTrending = {
-  keys : {},
+  keys : [],
   IDs : {},
 
   //Calculates trendVal from a given date string
@@ -28,64 +28,71 @@ var PublicTrending = {
     return((likes + comments + shares)/totalLikes);
   },
 
+  insertArr: function(data){
+
+  }
+
+  inArr: function(val){
+    for(var i=0;i<PublicTrending.keys.length;i++){
+      if(keys[i].key == val){
+        return i;
+      }
+    }
+    return -1;
+  }
+
   //Compiles all posts from pages with a certain keyword and returns a
   //object with keys:keywords and values:trendVal,totalPercentEng,count
   //trendVal gives higher weighting to keywords used more often that
   //are more recent
   getTrending: function(data){
     var id = "";
+    var index = -1;
+    var temp = {};
     for(obj in data){
       for(post in obj[data]){
         if(post.hasOwnProperty("message")){
           arr = Data.popularKeys(post);
           for(word in arr.posts){
-            if(PublicTrending.keys.hasOwnProperty(word)){
-              PublicTrending.keys[word][trendVal] += PublicTrending.getTrendVal(post[created_time]);
-              PublicTrending.keys[word][count]++;
-              if(post.hasOwnProperty(likes)){
-                likes = post[likes][summary][total_count];
-              }else{
-                likes = 0;
-              }
-              if(post.hasOwnProperty(comments)){
-                comments = post[comments][summary][total_count];
-              }else{
-                comments = 0;
-              }
-              if(post.hasOwnProperty(shares)){
-                shares = post[shares][summary][total_count];
-              }else{
-                shares = 0;
-              }
+            index = inArr(word);
+            if(post.hasOwnProperty(likes)){
+              likes = post[likes][summary][total_count];
+            }else{
+              likes = 0;
+            }
+            if(post.hasOwnProperty(comments)){
+              comments = post[comments][summary][total_count];
+            }else{
+              comments = 0;
+            }
+            if(post.hasOwnProperty(shares)){
+              shares = post[shares][summary][total_count];
+            }else{
+              shares = 0;
+            }
+            if(index > 0){
+              temp = PublicTrending.keys[index];
+              temp[trendVal] += PublicTrending.getTrendVal(post[created_time]);
+              temp[count]++;
               id = PublicTrending.getLikes(obj[paging][next])
-              PublicTrending.keys[word][totalPercentEng] += PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]);
+              temp[totalPercentEng] += PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]);
+              temp[avgEng] = temp[totalPercentEng] / temp[count];
             }else{
               id = PublicTrending.getLikes(obj[paging][next]);
-              if(post.hasOwnProperty(likes)){
-                likes = post[likes][summary][total_count];
-              }else{
-                likes = 0;
-              }
-              if(post.hasOwnProperty(comments)){
-                comments = post[comments][summary][total_count];
-              }else{
-                comments = 0;
-              }
-              if(post.hasOwnProperty(shares)){
-                shares = post[shares][summary][total_count];
-              }else{
-                shares = 0;
-              }
-              PublicTrending.keys[word] = {
+              temp = {
+                keyword : word;
                 trendVal : PublicTrending.getTrendVal(post[created_time]);
                 count : 1;
                 totalPercentEng : PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]);
+                avgEng : PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]);
               }
+              insertArr(temp);
             }
           }
         }
       }
     }
+    return PublicTrending.keys;
   }
 };
 
@@ -276,7 +283,7 @@ var UI = {
   
 };
 Data = {
-
+  trendPosts : {},
   stopWords:[],
   /*
     Finds popular words for given blob of text.
