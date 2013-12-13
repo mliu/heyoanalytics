@@ -2,7 +2,7 @@ var PublicTrending = {
   keys : [],
   IDs : {},
   bool : false,
-
+  chain: 0,
   //Calculates trendVal from a given date string
   getTrendVal: function(date){
     var current = new Date();
@@ -15,12 +15,14 @@ var PublicTrending = {
     var temp = str.replace("https://graph.facebook.com/",''),
         temp = temp.substr(0, temp.indexOf("/"));
         
+    this.chain++;
     if(temp == str){
       console.log("error, could not retrieve ID string");
       return "-1";
     }else{
       FB.api('/' + temp, function(res){
         callback(temp, res.likes);
+        PublicTrending.chain--;
       });
     }
     return temp;
