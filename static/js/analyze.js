@@ -1,6 +1,7 @@
 var PublicTrending = {
   keys : [],
   IDs : {},
+  bool : false,
 
   //Calculates trendVal from a given date string
   getTrendVal: function(date){
@@ -77,14 +78,18 @@ var PublicTrending = {
               index = PublicTrending.inArr(word);   //forgot this. keyword
               if(index > 0){
                 temp = PublicTrending.keys[index];
-                temp.trendVal += PublicTrending.getTrendVal(p["created_time"]);
-                console.log("test2")
+                console.log(temp);
+                console.log("test");
+                temp.trendVal += PublicTrending.getTrendVal(p.created_time);
                 temp.count += 1;
                 id = PublicTrending.getLikes(o.paging.next, function(id, likes){
                   PublicTrending.IDs[id] = likes;
                 });   //forgot a lot of quotes haha. changed to dot syntax.
                 temp.totalPercentEng += PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]);
                 temp.avgEng = temp.totalPercentEng / temp.count;
+                if(PublicTrending.IDs[id] !== undefined){
+                  PublicTrending.bool = true;
+                }
               }else{
                 id = PublicTrending.getLikes(o.paging.next, function(id, likes){
                   PublicTrending.IDs[id] = likes;
@@ -107,6 +112,7 @@ var PublicTrending = {
     this.keys.sort(function(a,b){
       return a.trendVal - b.trendVal;
     });
+    console.log(PublicTrending.bool);
     return this.keys;
   }
 };

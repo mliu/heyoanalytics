@@ -3,6 +3,7 @@
 */
 var S = require('./static/js/settings');
 var http = require('http');
+var redis = require('redis');
 
 var express = require('express'),
     hbs = require('hbs'),

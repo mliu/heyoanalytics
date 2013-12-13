@@ -8,7 +8,7 @@ $(document).on('click', '.page', function(){
     days = days || 365;
     var id = this.id.replace('page', '');
     var since = Math.floor((new Date().getTime() - 1000*60*60*24*days)/1000);
-    UI.loading();
+    UI.loading({message: 'Checking your pages . . .'});
     Request.pullByID({id:id, since:since}, function(data){
         UI.loaded();
         var limit = 3;
@@ -85,7 +85,7 @@ $(document).on('click', '#getPosts', function(){
     for (k in keywords)
         query += ' ' + keywords[0];
         
-    UI.loading();
+    UI.loading({message: 'Searching '+object+'s . . .'});
     var objLimit = 12;
     var objIds = [];
     
@@ -105,6 +105,7 @@ $(document).on('click', '#getPosts', function(){
                     break;
                 }
             }
+            UI.loading({message: 'Found matching '+object+'s.  Grabbing latest content . . .'});
             //another async call
             Request.batchByID({IDs:objIds, since:timeSince}, function(data){
                 UI.loaded();
