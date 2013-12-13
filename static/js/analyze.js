@@ -32,8 +32,9 @@ var PublicTrending = {
 
   inArr: function(val){
     for(var i=0;i<this.keys.length;i++){
-      if(PublicTrending.keys[i].keyword === val){  //forgot this.
+      if(PublicTrending.keys[i].keyword == val){  //forgot this.
         return i;
+        console.log(i);
       }
     }
     return -1;
@@ -76,15 +77,14 @@ var PublicTrending = {
               index = PublicTrending.inArr(word);   //forgot this. keyword
               if(index > 0){
                 temp = PublicTrending.keys[index];
-                console.log(temp);
-                console.log("test");
-                temp[trendVal] += PublicTrending.getTrendVal(p[created_time]);
-                temp[count] += 1;
+                temp.trendVal += PublicTrending.getTrendVal(p["created_time"]);
+                console.log("test2")
+                temp.count += 1;
                 id = PublicTrending.getLikes(o.paging.next, function(id, likes){
                   PublicTrending.IDs[id] = likes;
                 });   //forgot a lot of quotes haha. changed to dot syntax.
-                temp[totalPercentEng] += PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]);
-                temp[avgEng] = temp[totalPercentEng] / temp[count];
+                temp.totalPercentEng += PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]);
+                temp.avgEng = temp.totalPercentEng / temp.count;
               }else{
                 id = PublicTrending.getLikes(o.paging.next, function(id, likes){
                   PublicTrending.IDs[id] = likes;
