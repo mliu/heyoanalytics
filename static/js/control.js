@@ -108,9 +108,16 @@ $(document).on('click', '#getPosts', function(){
             UI.loading({message: 'Found matching '+object+'s.  Grabbing latest content . . .'});
             //another async call
             Request.batchByID({IDs:objIds, since:timeSince}, function(data){
-                UI.loaded();
+                UI.loading({message:'Waiting for last bits of data'});
                 console.log('got batch back ', data);
                 lastbatch = data;
+                PublicTrending.getTrending(data, function(keys, ids){
+                    UI.loaded();
+                    
+                    console.log('keys: ', keys);
+                    console.log('ids ', ids);
+                    UI.addTrends({trends:keys});
+                });
             });
         }
     );

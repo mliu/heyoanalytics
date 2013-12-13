@@ -98,14 +98,10 @@ var PublicTrending = {
           arr = Data.popularKeys([p]).posts;
           likes = p.likes ? p.likes.summary.total_count : 0;  //conditional statement
           comments = p.comments ? p.comments.summary.total_count : 0;
-<<<<<<< HEAD
-          shares = p.shares || 0;
-          
-=======
           if(p.hasOwnProperty("shares")){
             shares = p.shares.count || 0;
           }
->>>>>>> 94e9c567a582b1e0285e6d8050506406646af5fc
+          
           if(arr !== undefined){
             arr.forEach(function(w){
               word = w[0];
@@ -132,7 +128,7 @@ var PublicTrending = {
                 }
                 PublicTrending.keys.push(temp);
               }
-              Data.mergeKeywordData(temp, id, likes, comments, shares, post["message"]);
+              Data.mergeKeywordData(temp, id, likes, comments, shares, p["message"]);
             });
           }
         }
@@ -349,8 +345,8 @@ var UI = {
     for (var i in params.trends) {
       html = '<tr class="trendEntry">' +
                     '<td><strong class="keyword trend clicker">' + params.trends[i].keyword + '</strong></td>' +
-                    '<td class="heyoPoints"> ' + params.trends[i].trendVal + ' </td>' + //heyo points
-                    '<td class="engagement"> ' + params.trends[i].avgEng + '% </td>' +
+                    '<td class="heyoPoints"> ' + params.trends[i].totalReception + ' </td>' + //heyo points
+                    '<td class="engagement"> ' + params.trends[i].trendVal + '% </td>' +
               '</tr>';
       $('#trendBody').append(html);
     }
@@ -385,13 +381,15 @@ var UI = {
     for (var i in postArray[key]) {
       postArray[key][i] = postArray[key][i] || {};
       var message = postArray[key][i].message,
-          message = message ? message : '';
-      var comments = postArray[key][i].comment_count,
+          message = message ? message : 'Link';
+      var comments = postArray[key][i].comments,
           comments = comments ? comments : 0;
-      var likes = postArray[key][i].like_count,
+      var likes = postArray[key][i].likes,
           likes = likes ? likes : 0;
+      var url = postArray[key][i].url,
+          url = url ? url : '#';
       var html = '<tr class="trendPost">' +
-                    '<td><strong>' + message + '</strong></td>' +
+                    '<td><a href="'+ url+'"><strong>' + message + '</strong></a></td>' +
                     '<td class="comments"> ' + comments + ' </td>' +
                     '<td class="likes"> ' + likes + ' </td>' +
                   '</tr>';
