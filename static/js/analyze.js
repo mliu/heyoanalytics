@@ -5,6 +5,15 @@ var PublicTrending = {
   executed:false,
   
   //quick & crappy solution.  Checks if all getLikes responses have returns and executes callback.
+  //returns keys and IDs
+  /*
+  Test whole thing with this command:
+  
+  PublicTrending.getTrending(lastbatch, function(keys, ids){
+    console.log('keys: ', keys);
+    console.log('ids ', ids);
+  });
+  */
   executeChain: function(callback){
     if (this.executed) return;
     var inter;
@@ -12,11 +21,11 @@ var PublicTrending = {
     
     inter = setInterval(function(){
       if (PublicTrending.chain == 0) {
-        callback('all done');
+        callback(PublicTrending.keys, PublicTrending.IDs);
         PublicTrending.executed = false;
         clearInterval(inter);
       }
-    },15);
+    },75);
     this.executed = true;
   },
 
@@ -28,7 +37,7 @@ var PublicTrending = {
     return 5000000000/diff;
   },
 
-  getLikes: function(str, callback){ //feel free to delete the callback function I have... I was testing things out. lines 83 and 89
+  getLikes: function(str, callback, chainCb){ //feel free to delete the callback function I have... I was testing things out. lines 83 and 89
     var temp = str.replace("https://graph.facebook.com/",''),
         temp = temp.substr(0, temp.indexOf("/"));
         
@@ -43,9 +52,8 @@ var PublicTrending = {
       });
     }
     //should log when responses are done.
-    this.executeChain(function(){
-      console.log('Done waiting.  IDs recieved : ',PublicTrending.IDs);
-    });
+    this.executeChain(chainCb);
+    console.log('GET LIKES TEMP ', temp);
     return temp;
   },
 
@@ -67,7 +75,7 @@ var PublicTrending = {
   //object with keys:keywords and values:trendVal,totalPercentEng,count
   //trendVal gives higher weighting to keywords used more often that
   //are more recent
-  getTrending: function(data){
+  getTrending: function(data, callback){
     var id = "";
         index = -1,
         likes = 0,
@@ -84,7 +92,6 @@ var PublicTrending = {
       
       //console.log('forloop1 ', obj);
       for(post in data[obj].data){    //each post
-        console.log('forloop 2', post);
         
         var p = data[obj].data[post];
         
@@ -100,19 +107,18 @@ var PublicTrending = {
               index = PublicTrending.inArr(word);   //forgot this. keyword
               if(index > 0){
                 temp = PublicTrending.keys[index];
-                console.log(temp);
-                console.log("test");
+
                 temp.trendVal += PublicTrending.getTrendVal(p.created_time);
                 temp.count += 1;
                 id = PublicTrending.getLikes(o.paging.next, function(id, likes){
                   PublicTrending.IDs[id] = likes;
-                });   //forgot a lot of quotes haha. changed to dot syntax.
+                }, callback);   //forgot a lot of quotes haha. changed to dot syntax.
                 temp.totalPercentEng += PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]);
                 temp.avgEng = temp.totalPercentEng / temp.count;
               }else{
                 id = PublicTrending.getLikes(o.paging.next, function(id, likes){
                   PublicTrending.IDs[id] = likes;
-                });
+                }, callback);
                 temp = {
                   keyword : word,
                   trendVal : PublicTrending.getTrendVal(p.created_time),
