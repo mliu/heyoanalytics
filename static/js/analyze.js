@@ -98,7 +98,7 @@ var PublicTrending = {
           arr = Data.popularKeys([p]).posts;
           likes = p.likes ? p.likes.summary.total_count : 0;  //conditional statement
           comments = p.comments ? p.comments.summary.total_count : 0;
-          shares = p.shares["count"] || 0;
+          shares = p.shares || 0;
           
           if(arr !== undefined){
             arr.forEach(function(w){
@@ -318,10 +318,15 @@ var UI = {
     return popup;
   },
   
-  loading: function(){
+  loading: function(params){
+    params = params || {};
     $('#load').show();
+    if (params.message) {
+      $('#loadMsg').html(params.message);
+    }
   },
   loaded: function(){
+    $('#loadMsg').html('');
     $('#load').hide();
   },
 
@@ -450,10 +455,13 @@ Data = {
       for (k in keys) {
         keys[k] = keys[k].toLowerCase();  //format keys.  Best move this to postBlob
         //if (!keys[k])continue;
-        if (keys[k] == '' || keys[k].indexOf('http') != -1) {
-          continue;
-        }
-        if (this.stopWords.indexOf(keys[k]) != -1) continue;
+        var cases = keys[k] == '' ||
+                    this.stopWords.indexOf(keys[k]) != -1 ||
+                    keys[k].indexOf('http') != -1 ||
+                    keys[k].indexOf('www') != -1;
+                    
+        if (cases) continue;
+        
         
         // Increment key if already exists.
         for (i in mKeys) {
