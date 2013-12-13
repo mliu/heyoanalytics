@@ -46,7 +46,6 @@ var PublicTrending = {
     this.executeChain(function(){
       console.log('Done waiting.  IDs recieved : ',PublicTrending.IDs);
     });
-    console.log('GET LIKES TEMP ', temp);
     return temp;
   },
 
@@ -105,12 +104,9 @@ var PublicTrending = {
                 console.log("test");
                 temp.trendVal += PublicTrending.getTrendVal(p.created_time);
                 temp.count += 1;
-                console.log('GET LIKES ID 1 ', id);
                 id = PublicTrending.getLikes(o.paging.next, function(id, likes){
-                  console.log('GET LIKES ID 3 ', id);
                   PublicTrending.IDs[id] = likes;
                 });   //forgot a lot of quotes haha. changed to dot syntax.
-                console.log('GET LIKES ID 2 ', id);
                 temp.totalPercentEng += PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]);
                 temp.avgEng = temp.totalPercentEng / temp.count;
               }else{
@@ -124,9 +120,9 @@ var PublicTrending = {
                   totalPercentEng : PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]),
                   avgEng : PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id])
                 }
+                PublicTrending.keys.push(temp);
               }
               Data.mergeKeywordData(temp, id, likes, comments, shares, post["message"]);
-              PublicTrending.keys.push(temp);
             });
           }
         }
