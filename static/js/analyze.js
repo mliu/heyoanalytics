@@ -53,7 +53,6 @@ var PublicTrending = {
     }
     //should log when responses are done.
     this.executeChain(chainCb);
-    console.log('GET LIKES TEMP ', temp);
     return temp;
   },
 
@@ -99,7 +98,7 @@ var PublicTrending = {
           arr = Data.popularKeys([p]).posts;
           likes = p.likes ? p.likes.summary.total_count : 0;  //conditional statement
           comments = p.comments ? p.comments.summary.total_count : 0;
-          shares = p.shares || 0;
+          shares = p.shares["count"] || 0;
           
           if(arr !== undefined){
             arr.forEach(function(w){
@@ -110,11 +109,11 @@ var PublicTrending = {
 
                 temp.trendVal += PublicTrending.getTrendVal(p.created_time);
                 temp.count += 1;
-                id = PublicTrending.getLikes(o.paging.next, function(id, likes){
-                  PublicTrending.IDs[id] = likes;
+                id = PublicTrending.getLikes(o.paging.next, function(id, totalLikes){
+                  PublicTrending.IDs[id] = totalLikes;
+                  temp.totalReception += likes + comments + shares;
+                  temp.avgEng = temp.totalReception / temp.count;
                 }, callback);   //forgot a lot of quotes haha. changed to dot syntax.
-                temp.totalPercentEng += PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]);
-                temp.avgEng = temp.totalPercentEng / temp.count;
               }else{
                 id = PublicTrending.getLikes(o.paging.next, function(id, likes){
                   PublicTrending.IDs[id] = likes;
@@ -123,8 +122,7 @@ var PublicTrending = {
                   keyword : word,
                   trendVal : PublicTrending.getTrendVal(p.created_time),
                   count : 1,
-                  totalPercentEng : PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]),
-                  avgEng : PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id])
+                  totalReception : likes + comments + shares,
                 }
                 PublicTrending.keys.push(temp);
               }
