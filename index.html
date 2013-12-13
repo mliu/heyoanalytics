@@ -10,8 +10,8 @@
   <script type="text/javascript" src="static/js/jquery-1.10.2.min.js"></script>
 </head>
 <body>
-  <div id="popupSpace" class="abs level3"></div>
-  <div class="bar">
+  <div id="popupSpace" class="abs level4"></div>
+  <div class="bar fixed level3">
     <div class="bar-content">
       <img src="static/images/heyo_logo.png" class="size2">
 <!--       <a class="btn-auth btn-facebook large" href="#" id="fb-btn">
@@ -19,7 +19,27 @@
       </a> -->
 <!--       <div class="fb-login-button" data-width="370" data-height="100" data-max-rows="1" data-show-faces="false" autologout-link="true"></div> -->
     </div>
-  </div>
+      <!-- load icon -->
+    <div class="windows8 hide fixed" id="load">
+      <div class="wBall" id="wBall_1">
+        <div class="wInnerBall bg4"></div>
+      </div>
+      <div class="wBall" id="wBall_2">
+        <div class="wInnerBall bg4"></div>
+      </div>
+      <div class="wBall" id="wBall_3">
+        <div class="wInnerBall bg4"></div>
+      </div>
+      <div class="wBall" id="wBall_4">
+        <div class="wInnerBall bg4"></div>
+      </div>
+      <div class="wBall" id="wBall_5">
+        <div class="wInnerBall bg4"></div>
+      </div>
+      <em id="loadMsg" class="orange abs"></em>
+    </div>
+  </div><div class="bar"></div><!-- clear space -->
+  
     <div class=" container fleft ">
       <div class="row">
         <div class="col-xs-6 .col-md-4">
@@ -79,10 +99,10 @@
           <table class="table table-striped">
             <tbody id="trendBody">
               <tr>
-                <th> Keywords </th> <th class="orange"> Heyo Points </th> <th> Engagement </th>
+                <th> Keyword </th> <th class="orange"> Heyo Points </th> <th> Engagement </th>
               </tr>
               <tr id="noResults">
-                <td> No results </td> <td></td>
+                <td> No results </td> <td></td><td></td>
               </tr>
             </tbody>
           </table>
@@ -108,24 +128,6 @@
       </table>
     </div>
   </div>
-  <!-- load icon -->
-<div class="windows8 hide" id="load">
-  <div class="wBall" id="wBall_1">
-    <div class="wInnerBall bg4"></div>
-  </div>
-  <div class="wBall" id="wBall_2">
-    <div class="wInnerBall bg4"></div>
-  </div>
-  <div class="wBall" id="wBall_3">
-    <div class="wInnerBall bg4"></div>
-  </div>
-  <div class="wBall" id="wBall_4">
-    <div class="wInnerBall bg4"></div>
-  </div>
-  <div class="wBall" id="wBall_5">
-    <div class="wInnerBall bg4"></div>
-  </div>
-</div>
 
   <script type="text/javascript" src="static/js/settings.js"></script>
   <script type="text/javascript" src="static/js/fb.js"></script>

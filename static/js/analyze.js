@@ -22,6 +22,7 @@ var PublicTrending = {
         callback(temp, res.likes);
       });
     }
+    console.log('GET LIKES TEMP ', temp);
     return temp;
   },
 
@@ -78,13 +79,16 @@ var PublicTrending = {
                 temp = PublicTrending.keys[index];
                 console.log(temp);
                 console.log("test");
-                temp[trendVal] += PublicTrending.getTrendVal(p[created_time]);
-                temp[count] += 1;
+                temp.trendVal += PublicTrending.getTrendVal(p.created_time);
+                temp.count += 1;
+                console.log('GET LIKES ID 1 ', id);
                 id = PublicTrending.getLikes(o.paging.next, function(id, likes){
+                  console.log('GET LIKES ID 3 ', id);
                   PublicTrending.IDs[id] = likes;
                 });   //forgot a lot of quotes haha. changed to dot syntax.
-                temp[totalPercentEng] += PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]);
-                temp[avgEng] = temp[totalPercentEng] / temp[count];
+                console.log('GET LIKES ID 2 ', id);
+                temp.totalPercentEng += PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]);
+                temp.avgEng = temp.totalPercentEng / temp.count;
               }else{
                 id = PublicTrending.getLikes(o.paging.next, function(id, likes){
                   PublicTrending.IDs[id] = likes;

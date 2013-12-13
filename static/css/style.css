@@ -9,6 +9,7 @@ body{
 
 .bar{
   background-color:#38393b;
+  width: 100%; min-height: 50px;
 }
 
 .bar-content{
@@ -120,3 +121,4 @@ body{
 }
 
 #load{top:15px; left:15px;}
+#loadMsg{margin-top: 1.5em; margin-left: 4em; width: 22em;}
