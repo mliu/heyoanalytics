@@ -10,7 +10,7 @@ var PublicTrending = {
     return 5000000000/diff;
   },
 
-  getLikes: function(str){
+  getLikes: function(str, callback){ //feel free to delete the callback function I have... I was testing things out. lines 83 and 89
     var temp = str.replace("https://graph.facebook.com/",''),
         temp = temp.substr(0, temp.indexOf("/"));
         
@@ -19,7 +19,7 @@ var PublicTrending = {
       return "-1";
     }else{
       FB.api('/' + temp, function(res){
-        PublicTrending.IDs[temp] = res.likes;
+        callback(temp, res.likes);
       });
     }
     return temp;
@@ -32,7 +32,7 @@ var PublicTrending = {
 
   inArr: function(val){
     for(var i=0;i<this.keys.length;i++){
-      if(this.keys[i].key == val){  //forgot this.
+      if(PublicTrending.keys[i].keyword === val){  //forgot this.
         return i;
       }
     }
@@ -76,13 +76,19 @@ var PublicTrending = {
               index = PublicTrending.inArr(word);   //forgot this. keyword
               if(index > 0){
                 temp = PublicTrending.keys[index];
+                console.log(temp);
+                console.log("test");
                 temp[trendVal] += PublicTrending.getTrendVal(p[created_time]);
-                temp[count]++;
-                id = PublicTrending.getLikes(o.paging.next)   //forgot a lot of quotes haha. changed to dot syntax.
+                temp[count] += 1;
+                id = PublicTrending.getLikes(o.paging.next, function(id, likes){
+                  PublicTrending.IDs[id] = likes;
+                });   //forgot a lot of quotes haha. changed to dot syntax.
                 temp[totalPercentEng] += PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]);
                 temp[avgEng] = temp[totalPercentEng] / temp[count];
               }else{
-                id = PublicTrending.getLikes(o.paging.next);
+                id = PublicTrending.getLikes(o.paging.next, function(id, likes){
+                  PublicTrending.IDs[id] = likes;
+                });
                 temp = {
                   keyword : word,
                   trendVal : PublicTrending.getTrendVal(p.created_time),
