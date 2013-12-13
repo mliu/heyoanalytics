@@ -1,5 +1,6 @@
 var PublicTrending = {
   keys : [],
+  finalKeys : [],
   IDs : {},
   chain: 0,
   executed:false,
@@ -37,6 +38,9 @@ var PublicTrending = {
     return 5000000000/diff;
   },
 
+  // findOkey: function(key){
+  //   for(obj in PublicTrending.finalKeys[key])
+  // }
   getLikes: function(str, callback, chainCb){ //feel free to delete the callback function I have... I was testing things out. lines 83 and 89
     var temp = str.replace("https://graph.facebook.com/",''),
         temp = temp.substr(0, temp.indexOf("/"));
@@ -68,6 +72,24 @@ var PublicTrending = {
       }
     }
     return -1;
+  },
+
+  merge: function(data){
+    console.log("merging");
+    for(obj in data){
+      var o = data[obj];
+      if(obj > 0){
+        if(o.trendVal == PublicTrending.finalKeys[PublicTrending.finalKeys.length-1].trendVal){
+          PublicTrending.finalKeys[PublicTrending.finalKeys.length-1].keyword += " " + o.keyword;
+        }else{
+          PublicTrending.finalKeys.push(o);
+          PublicTrending.finalKeys[PublicTrending.finalKeys.length-1].oKey = o.keyword;
+        }
+      }else if(obj == 0){
+        PublicTrending.finalKeys.push(o);
+        PublicTrending.finalKeys[PublicTrending.finalKeys.length-1].oKey = o.keyword;
+      }
+    }
   },
 
   //Compiles all posts from pages with a certain keyword and returns a
@@ -113,9 +135,9 @@ var PublicTrending = {
                 temp.count += 1;
                 id = PublicTrending.getLikes(o.paging.next, function(id, totalLikes){
                   PublicTrending.IDs[id] = totalLikes;
-                  temp.totalReception += likes + comments + shares;
-                  temp.avgEng = temp.totalReception / totalLikes;
                 }, callback);   //forgot a lot of quotes haha. changed to dot syntax.
+                temp.totalReception += likes + comments + shares;
+                temp.avgEng = temp.totalReception / temp.count;
               }else{
                 id = PublicTrending.getLikes(o.paging.next, function(id, likes){
                   PublicTrending.IDs[id] = likes;
@@ -124,6 +146,7 @@ var PublicTrending = {
                   keyword : word,
                   trendVal : PublicTrending.getTrendVal(p.created_time),
                   count : 1,
+                  avgEng : 0,
                   totalReception : likes + comments + shares,
                 }
                 PublicTrending.keys.push(temp);
@@ -135,9 +158,10 @@ var PublicTrending = {
       }
     }
     this.keys.sort(function(a,b){
-      return a.trendVal - b.trendVal;
+      return b.trendVal - a.trendVal;
     });
-    return this.keys;
+    this.merge(this.keys);
+    return this.finalKeys;
   }
 };
 
@@ -323,11 +347,13 @@ var UI = {
   loading: function(params){
     params = params || {};
     $('#load').show();
+    $('#getPosts').prop("disabled",true);
     if (params.message) {
       $('#loadMsg').html(params.message);
     }
   },
   loaded: function(){
+    $('#getPosts').prop("disabled",false);
     $('#loadMsg').html('');
     $('#load').hide();
   },
@@ -344,9 +370,9 @@ var UI = {
     if ($('#noResults').length) $('#noResults').hide();
     for (var i in params.trends) {
       html = '<tr class="trendEntry">' +
-                    '<td><strong class="keyword trend clicker">' + params.trends[i].keyword + '</strong></td>' +
-                    '<td class="heyoPoints"> ' + params.trends[i].totalReception + ' </td>' + //heyo points
-                    '<td class="engagement"> ' + params.trends[i].trendVal + '% </td>' +
+                    '<td><strong class="keyword trend clicker">' +  params.trends[i].keyword + '</strong></td>' +
+                    '<td class="heyoPoints"> ' + Math.round(params.trends[i].trendVal*1000)/1000 + ' </td>' + //heyo points
+                    '<td class="Reception"> ' + Math.round(params.trends[i].avgEng*1000)/1000 + ' </td>' +
               '</tr>';
       $('#trendBody').append(html);
     }
@@ -371,22 +397,23 @@ var UI = {
   showPosts: function(key, pOptions){
     pOptions = pOptions || { white: true };
     //Set this to correct path.
+    var oKey = key;
     var postArray = Data.trendPosts;
     
-    if (!postArray[key]) {
+    if (!postArray[oKey]) {
       console.log('key doesn\'t exist');
       return {};
     }
     var table = $($('#trendPostTemplate').html());
-    for (var i in postArray[key]) {
-      postArray[key][i] = postArray[key][i] || {};
-      var message = postArray[key][i].message,
+    for (var i in postArray[oKey]) {
+      postArray[oKey][i] = postArray[oKey][i] || {};
+      var message = postArray[oKey][i].message,
           message = message ? message : 'Link';
-      var comments = postArray[key][i].comments,
+      var comments = postArray[oKey][i].comments,
           comments = comments ? comments : 0;
-      var likes = postArray[key][i].likes,
+      var likes = postArray[oKey][i].likes,
           likes = likes ? likes : 0;
-      var url = postArray[key][i].url,
+      var url = postArray[oKey][i].url,
           url = url ? url : '#';
       var html = '<tr class="trendPost">' +
                     '<td><a href="'+ url+'"><strong>' + message + '</strong></a></td>' +
@@ -395,7 +422,7 @@ var UI = {
                   '</tr>';
       table.append(html);
     }
-    this.popup('Trending Posts for '+key, table, pOptions);
+    this.popup('Trending Posts for '+oKey, table, pOptions);
     return table;
   },
   
