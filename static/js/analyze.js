@@ -2,6 +2,23 @@ var PublicTrending = {
   keys : [],
   IDs : {},
   chain: 0,
+  executed:false,
+  
+  //quick & crappy solution.  Checks if all getLikes responses have returns and executes callback.
+  executeChain: function(callback){
+    if (this.executed) return;
+    var inter;
+    clearInterval(inter); //safety check
+    
+    inter = setInterval(function(){
+      if (PublicTrending.chain == 0) {
+        callback('all done');
+        PublicTrending.executed = false;
+        clearInterval(inter);
+      }
+    },15);
+    this.executed = true;
+  },
 
   //Calculates trendVal from a given date string
   getTrendVal: function(date){
@@ -25,6 +42,10 @@ var PublicTrending = {
         PublicTrending.chain--;
       });
     }
+    //should log when responses are done.
+    this.executeChain(function(){
+      console.log('Done waiting.  IDs recieved : ',PublicTrending.IDs);
+    });
     console.log('GET LIKES TEMP ', temp);
     return temp;
   },
