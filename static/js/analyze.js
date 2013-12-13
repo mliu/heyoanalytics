@@ -98,8 +98,14 @@ var PublicTrending = {
           arr = Data.popularKeys([p]).posts;
           likes = p.likes ? p.likes.summary.total_count : 0;  //conditional statement
           comments = p.comments ? p.comments.summary.total_count : 0;
+<<<<<<< HEAD
           shares = p.shares || 0;
           
+=======
+          if(p.hasOwnProperty("shares")){
+            shares = p.shares.count || 0;
+          }
+>>>>>>> 94e9c567a582b1e0285e6d8050506406646af5fc
           if(arr !== undefined){
             arr.forEach(function(w){
               word = w[0];
@@ -112,7 +118,7 @@ var PublicTrending = {
                 id = PublicTrending.getLikes(o.paging.next, function(id, totalLikes){
                   PublicTrending.IDs[id] = totalLikes;
                   temp.totalReception += likes + comments + shares;
-                  temp.avgEng = temp.totalReception / temp.count;
+                  temp.avgEng = temp.totalReception / totalLikes;
                 }, callback);   //forgot a lot of quotes haha. changed to dot syntax.
               }else{
                 id = PublicTrending.getLikes(o.paging.next, function(id, likes){
