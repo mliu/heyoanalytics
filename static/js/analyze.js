@@ -10,7 +10,7 @@ var PublicTrending = {
     return 5000000000/diff;
   },
 
-  getLikes: function(str){
+  getLikes: function(str, callback){ //feel free to delete the callback function I have... I was testing things out. lines 83 and 89
     var temp = str.replace("https://graph.facebook.com/",''),
         temp = temp.substr(0, temp.indexOf("/"));
         
@@ -19,7 +19,7 @@ var PublicTrending = {
       return "-1";
     }else{
       FB.api('/' + temp, function(res){
-        PublicTrending.IDs[temp] = res.likes;
+        callback(temp, res.likes);
       });
     }
     return temp;
@@ -32,7 +32,7 @@ var PublicTrending = {
 
   inArr: function(val){
     for(var i=0;i<this.keys.length;i++){
-      if(this.keys[i].key == val){  //forgot this.
+      if(PublicTrending.keys[i].keyword === val){  //forgot this.
         return i;
       }
     }
@@ -44,12 +44,12 @@ var PublicTrending = {
   //trendVal gives higher weighting to keywords used more often that
   //are more recent
   getTrending: function(data){
-    
     var id = "";
         index = -1,
         likes = 0,
         shares = 0,
         comments = 0,
+        word = "",
         temp = {};
         
     console.log(data);
@@ -65,48 +65,41 @@ var PublicTrending = {
         var p = data[obj].data[post];
         
         if(p.hasOwnProperty("message")){    //e
-          arr = Data.popularKeys([p]);
-          /*if(p.hasOwnProperty('likes')){
-            likes = p.likes.summary.total_count;
-          }else{
-            likes = 0;
-          }*/
+          arr = Data.popularKeys([p]).posts;
           likes = p.likes ? p.likes.summary.total_count : 0;  //conditional statement
-          /*if(p.hasOwnProperty(comments)){
-            comments = p.comments.summary.total_count;
-          }else{
-            comments = 0;
-          }*/
           comments = p.comments ? p.comments.summary.total_count : 0;
-          
-          /*if(p.hasOwnProperty(shares)){
-            shares = p[shares][summary][total_count]; //forgot quotes.
-          }else{
-            shares = 0;
-          }*/
           shares = p.shares || 0;
           
-          for(word in arr.posts){
-            index = this.inArr(word);   //forgot this. keyword
-            if(index > 0){
-              temp = this.keys[index];
-              temp[trendVal] += this.getTrendVal(p[created_time]);
-              temp[count]++;
-              id = this.getLikes(o.paging.next)   //forgot a lot of quotes haha. changed to dot syntax.
-              temp[totalPercentEng] += this.getPercentEng(likes, comments, shares, this.IDs[id]);
-              temp[avgEng] = temp[totalPercentEng] / temp[count];
-            }else{
-              id = this.getLikes(o.paging.next);
-              temp = {
-                keyword : word,
-                trendVal : this.getTrendVal(p.created_time),
-                count : 1,
-                totalPercentEng : this.getPercentEng(likes, comments, shares, this.IDs[id]),
-                avgEng : this.getPercentEng(likes, comments, shares, this.IDs[id])
+          if(arr !== undefined){
+            arr.forEach(function(w){
+              word = w[0];
+              index = PublicTrending.inArr(word);   //forgot this. keyword
+              if(index > 0){
+                temp = PublicTrending.keys[index];
+                console.log(temp);
+                console.log("test");
+                temp[trendVal] += PublicTrending.getTrendVal(p[created_time]);
+                temp[count] += 1;
+                id = PublicTrending.getLikes(o.paging.next, function(id, likes){
+                  PublicTrending.IDs[id] = likes;
+                });   //forgot a lot of quotes haha. changed to dot syntax.
+                temp[totalPercentEng] += PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]);
+                temp[avgEng] = temp[totalPercentEng] / temp[count];
+              }else{
+                id = PublicTrending.getLikes(o.paging.next, function(id, likes){
+                  PublicTrending.IDs[id] = likes;
+                });
+                temp = {
+                  keyword : word,
+                  trendVal : PublicTrending.getTrendVal(p.created_time),
+                  count : 1,
+                  totalPercentEng : PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id]),
+                  avgEng : PublicTrending.getPercentEng(likes, comments, shares, PublicTrending.IDs[id])
+                }
               }
-            }
-            Data.mergeKeywordData(temp, id, likes, comments, shares, post["message"]);
-            PublicTrending.keys.push(temp);
+              Data.mergeKeywordData(temp, id, likes, comments, shares, post["message"]);
+              PublicTrending.keys.push(temp);
+            });
           }
         }
       }
@@ -496,8 +489,8 @@ Data = {
   popularKeys:  function(data){
     try{
       var blob = this.postBlob(data);
-      console.log(blob);
       var postKeys = this.sortText(blob.postBlob);
+      console.log(postKeys);
       var commentKeys = this.sortText(blob.commentBlob);
       return{
         posts: postKeys,
