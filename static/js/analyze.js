@@ -1,4 +1,4 @@
-var PublicTrending = {
+var Trending = {
   keys : [],
   finalKeys : [],
   IDs : {},
@@ -10,7 +10,7 @@ var PublicTrending = {
   /*
   Test whole thing with this command:
   
-  PublicTrending.getTrending(lastbatch, function(keys, ids){
+  Trending.getTrending(lastbatch, function(keys, ids){
     console.log('keys: ', keys);
     console.log('ids ', ids);
   });
@@ -21,9 +21,9 @@ var PublicTrending = {
     clearInterval(inter); //safety check
     
     inter = setInterval(function(){
-      if (PublicTrending.chain == 0) {
-        callback(PublicTrending.keys, PublicTrending.IDs);
-        PublicTrending.executed = false;
+      if (Trending.chain == 0) {
+        callback(Trending.keys, Trending.IDs);
+        Trending.executed = false;
         clearInterval(inter);
       }
     },75);
@@ -31,16 +31,14 @@ var PublicTrending = {
   },
 
   //Calculates trendVal from a given date string
-  getTrendVal: function(date){
+  trendVal: function(date){
     var current = new Date();
     var d = new Date(date);
     var diff = (current.getTime() - d.getTime());
     return 5000000000/diff;
   },
 
-  // findOkey: function(key){
-  //   for(obj in PublicTrending.finalKeys[key])
-  // }
+
   getLikes: function(str, callback, chainCb){ //feel free to delete the callback function I have... I was testing things out. lines 83 and 89
     var temp = str.replace("https://graph.facebook.com/",''),
         temp = temp.substr(0, temp.indexOf("/"));
@@ -52,7 +50,7 @@ var PublicTrending = {
     }else{
       FB.api('/' + temp, function(res){
         callback(temp, res.likes);
-        PublicTrending.chain--;
+        Trending.chain--;
       });
     }
     //should log when responses are done.
@@ -65,9 +63,9 @@ var PublicTrending = {
     return((likes + comments + shares)/totalLikes);
   },
 
-  inArr: function(val){
-    for(var i=0;i<this.keys.length;i++){
-      if(PublicTrending.keys[i].keyword === val){  //forgot this.
+  keyExists: function(val){
+    for (var i in this.keys) {
+      if(this.keys[i].keyword === val){  //forgot this.
         return i;
       }
     }
@@ -79,15 +77,15 @@ var PublicTrending = {
     for(obj in data){
       var o = data[obj];
       if(obj > 0){
-        if(o.trendVal == PublicTrending.finalKeys[PublicTrending.finalKeys.length-1].trendVal){
-          PublicTrending.finalKeys[PublicTrending.finalKeys.length-1].keyword += " " + o.keyword;
+        if(o.trendVal == this.finalKeys[this.finalKeys.length-1].trendVal){
+          this.finalKeys[this.finalKeys.length-1].keyword += " " + o.keyword;
         }else{
-          PublicTrending.finalKeys.push(o);
-          PublicTrending.finalKeys[PublicTrending.finalKeys.length-1].oKey = o.keyword;
+          this.finalKeys.push(o);
+          this.finalKeys[this.finalKeys.length-1].oKey = o.keyword;
         }
       }else if(obj == 0){
-        PublicTrending.finalKeys.push(o);
-        PublicTrending.finalKeys[PublicTrending.finalKeys.length-1].oKey = o.keyword;
+        this.finalKeys.push(o);
+        this.finalKeys[this.finalKeys.length-1].oKey = o.keyword;
       }
     }
   },
@@ -96,67 +94,74 @@ var PublicTrending = {
   //object with keys:keywords and values:trendVal,totalPercentEng,count
   //trendVal gives higher weighting to keywords used more often that
   //are more recent
-  getTrending: function(data, callback){
-    var id = "";
-        index = -1,
-        likes = 0,
-        shares = 0,
-        comments = 0,
-        word = "",
-        temp = {};
+  get: function(data, callback){
+    var temp = {};
         
     console.log(data);
     //each page
-    for(obj in data){     //JS doesn't do loops like python
+    for(obj in data){     
       
-      var o = data[obj];    //my fix
-      
-      //console.log('forloop1 ', obj);
-      for(post in data[obj].data){    //each post
+      var o = data[obj];    
+      //each post
+      for(post in data[obj].data){    
         
         var p = data[obj].data[post];
         
-        if(p.hasOwnProperty("message")){    //e
+        if(p.hasOwnProperty("message")){    
           arr = Data.popularKeys([p]).posts;
-          likes = p.likes ? p.likes.summary.total_count : 0;  //conditional statement
-          comments = p.comments ? p.comments.summary.total_count : 0;
-          if(p.hasOwnProperty("shares")){
-            shares = p.shares.count || 0;
-          }
           
-          if(arr !== undefined){
-            arr.forEach(function(w){
-              word = w[0];
-              index = PublicTrending.inArr(word);   //forgot this. keyword
-              if(index > 0){
-                temp = PublicTrending.keys[index];
+          var likes = p.likes ? p.likes.summary.total_count : 0,
+              comments = p.comments ? p.comments.summary.total_count : 0,
+              shares = p.shares ? p.shares.count : 0;
+          
+          if(!arr) continue;
+          //each word
+          arr.forEach(function(w){
+            var word = w[0];
+            var index = Trending.keyExists(word);   
+            if(index >= 0){
+              temp = Trending.keys[index];
 
-                temp.trendVal += PublicTrending.getTrendVal(p.created_time);
-                temp.count += 1;
-                id = PublicTrending.getLikes(o.paging.next, function(id, totalLikes){
-                  PublicTrending.IDs[id] = totalLikes;
-                }, callback);   //forgot a lot of quotes haha. changed to dot syntax.
-                temp.totalReception += likes + comments + shares;
-                temp.avgEng = temp.totalReception / temp.count;
-              }else{
-                id = PublicTrending.getLikes(o.paging.next, function(id, likes){
-                  PublicTrending.IDs[id] = likes;
-                }, callback);
-                temp = {
-                  keyword : word,
-                  trendVal : PublicTrending.getTrendVal(p.created_time),
-                  count : 1,
-                  avgEng : 0,
-                  totalReception : likes + comments + shares,
-                }
-                PublicTrending.keys.push(temp);
+              temp.trendVal += Trending.trendVal(p.created_time);
+              temp.count += 1;
+              
+              temp.totalReception += likes + comments + shares;
+              temp.avgEng = temp.totalReception / temp.count;
+              Trending.keys[index] = temp;
+            }else{
+
+              temp = {
+                keyword : word,
+                trendVal : Trending.trendVal(p.created_time),
+                count : 1,
+                avgEng : 0,
+                totalReception : likes + comments + shares,
               }
-              Data.mergeKeywordData(temp, id, likes, comments, shares, p["message"]);
-            });
-          }
+              Trending.keys.push(temp);
+            }
+            
+            var id = Trending.getLikes(o.paging.next, function(id, totalLikes){
+              Trending.IDs[id] = totalLikes;
+            }, callback);
+            var data = {
+                      message: p.message,
+                      avgEng: temp.avgEng, //Heyo Points
+                      likes: likes,
+                      url: "http://facebook.com/" + id,
+                      comments: comments,
+                      shares: shares
+                    };
+            Data.save({type:'posts', data:data, keyword:word, sort:avgEng});
+          });
+          
+          
         }
       }
     }
+    return this.sort();
+  },
+  
+  sort: function(){
     this.keys.sort(function(a,b){
       return b.trendVal - a.trendVal;
     });
@@ -191,13 +196,7 @@ var Request = {
         url += '&fields=best_page';
       }
       FB.api(url, function(res){
-        /*var data = []; // Can we keep the whole data object?
-        for(page in res.data){
-          pullReceptionData(page.id)
-          
-          //data.concat(Request.pullByID(page.id)); //You need a callback function.
-        }
-        Request.keys[key] = data;*/
+
         Request.keys[params.query] = res.data;
         callback(res.data);
       });
@@ -228,7 +227,7 @@ var Request = {
     
     //FQL query for getting all posts and specific fields
     FB.api(url, function(res){
-      Request.IDs[params.id] = res.data;
+      //Request.IDs[params.id] = res.data;
       callback(Request.IDs[params.id]);
     });
   },//end pullbyid
@@ -258,8 +257,7 @@ var Request = {
       console.log('unparsed batch res', res);
       for (var n in res){
         var p = JSON.parse(res[n].body);
-        
-        parsed.push(JSON.parse(res[n].body));
+        parsed.push((p));
       }
       callback(parsed);
     });
@@ -267,215 +265,48 @@ var Request = {
 };
   
 
-var UI = {
-  
-  /*
-    adds pages as rows to table
-    - takes fb response data object.
-    
-    edit html variable to edit or add.
-  */
-  addPages: function(pages){
-    if (!pages) {
-      console.log('No pages !');
-    }
-    
-    for (p in pages) {
-      pages[p].likes = pages[p].likes || 0;
-      var html = '<tr id="page'+ pages[p].id +'" class="page" >' +
-                    '<td>' + pages[p].name + '</td>' + 
-                    '<td>' + pages[p].likes + '</td>' +
-                  '</tr>';
-      $('#pageBody').append(html);
-    }
-    return pages;
-  },
-  
-  /* adds keyword to container */
-  addKeyWord: function(keyword){
-    keyword = $.trim(keyword);
-    if (keyword == '') return;
-    var kw = $('#keywordTemplate').clone();
-    kw.attr('id','');
-    kw.find('.glyphicon-ok').remove();
-    kw.find('input.keywordQuery').val(keyword);
-    //kw.find('input.keywordQuery').attr('readonly',true);
-    
-    $('#keywordWrap').prepend(kw);
-  },
-  
-  /* clear key words enterd in query table*/
-  clearKeyWords: function(){
-    $('.keywordQuery').each(function(){
-      if (!($(this).parents('.inputWrap').attr('id') == 'keywordTemplate')){
-        $(this).parents('.inputWrap').remove();
-      }
-    });
-  },
-  /*
-    General popup for displaying info, errors.  returns popup jquery obj.
-    
-    @option millis - milliseconds for popup to display, default forever.
-    @option error - bool to indicate if error message. red title text.
-  */
-  popup: function(title, message, options){
-    options = options || {};
-    $('#popupSpace').find('.popup').remove();
-    var popup = $($('#popupTemplate').html());
-    popup.find('.title').html(title);
-    popup.find('.message').html(message);
-    
-    if (options.error) 
-      popup.find('.title').addClass('red');
-    
-    if (options.white) {
-      popup.css('background','white');
-      popup.css('color','black');
-    }
-    $('#popupSpace').append(popup);
-    popup.show('fast');
-    
-    setTimeout(function(){
-      if (options.millis) {
-        popup.hide('fast');
-      }
-    }, options.millis || 0);
-    
-    return popup;
-  },
-  
-  loading: function(params){
-    params = params || {};
-    $('#load').show();
-    $('#getPosts').prop("disabled",true);
-    if (params.message) {
-      $('#loadMsg').html(params.message);
-    }
-  },
-  loaded: function(){
-    $('#getPosts').prop("disabled",false);
-    $('#loadMsg').html('');
-    $('#load').hide();
-  },
 
-  /* Add a trend as an entry to result table
-   
-    *Make sure the keys match obj.
-    
-    @param trends - array
-  */
-  addTrends: function(params){
-    params = params || {};
-    var html;
-    if ($('#noResults').length) $('#noResults').hide();
-    for (var i in params.trends) {
-      html = '<tr class="trendEntry">' +
-                    '<td><strong class="keyword trend clicker">' +  params.trends[i].keyword + '</strong></td>' +
-                    '<td class="heyoPoints"> ' + Math.round(params.trends[i].trendVal*1000)/1000 + ' </td>' + //heyo points
-                    '<td class="Reception"> ' + Math.round(params.trends[i].avgEng*1000)/1000 + ' </td>' +
-              '</tr>';
-      $('#trendBody').append(html);
-    }
-    return html;
-  },
-  /*
-    Wipe the trends in trend table.
-  */
-  clearTrends: function(){
-    $('.trendEntry').remove();
-    $('#noResults').show('fast');
-    return 1;
-  },
-  
-  /*
-    Show trending posts in popup
-    
-    *Set postArray equal to array containing all posts.
-    
-    @pOptions - same options for popup.
-  */
-  showPosts: function(key, pOptions){
-    pOptions = pOptions || { white: true };
-    //Set this to correct path.
-    var oKey = key;
-    var postArray = Data.trendPosts;
-    
-    if (!postArray[oKey]) {
-      console.log('key doesn\'t exist');
-      return {};
-    }
-    var table = $($('#trendPostTemplate').html());
-    for (var i in postArray[oKey]) {
-      postArray[oKey][i] = postArray[oKey][i] || {};
-      var message = postArray[oKey][i].message,
-          message = message ? message : 'Link';
-      var comments = postArray[oKey][i].comments,
-          comments = comments ? comments : 0;
-      var likes = postArray[oKey][i].likes,
-          likes = likes ? likes : 0;
-      var url = postArray[oKey][i].url,
-          url = url ? url : '#';
-      var html = '<tr class="trendPost">' +
-                    '<td><a href="'+ url+'"><strong>' + message + '</strong></a></td>' +
-                    '<td class="comments"> ' + comments + ' </td>' +
-                    '<td class="likes"> ' + likes + ' </td>' +
-                  '</tr>';
-      table.append(html);
-    }
-    this.popup('Trending Posts for '+oKey, table, pOptions);
-    return table;
-  },
-  
-  //testing
-  testTrends: function(){
-    var entry;
-    var trends = [];
-    for (var i = 0; i <6; i++){
-      trends.push({keyword: 'test'+i, avgEng:i, trendVal:Math.floor(Math.random() * 150)});
-      Data.trendPosts['test'+i] = [];
-        for (var n=0; n<5; n++){
-          Data.trendPosts['test'+i].push( {
-            message: 'a message for test'+i+' and post'+n,
-            like_count:Math.floor(Math.random() * 250),
-            comment_count:Math.floor(Math.random() * 50)
-          });
-      }
-    }
-    this.addTrends({trends:trends});
-    return trends;
-  }
-  
-};
 
 Data = {
   stopWords:[],
-  trendPosts : {},
+  posts : {},
+  
+  /*
+    Responsible for saving any data dynamically
+    
+    @param type: the name of data being stored -string
+    @param data:  the data to be saved or added to type if exists. - obj
+    @param keyword:  the key for new data to be added - string
+    @param sort: indicate a value in data to sort by - value
+    
+  */
+  save: function(params){
+    params = params || {};
+    if (!this[params.type]) {
+      if (!params.type) {
+        console.log('Error: no data type given for data.save().'); return;
+      }
+      this[params.type] = {};
+    }
+    if(!this[params.type].data.keyword){
+      this[params.type][data.keyword] = [];
+    }
+    this[params.type][data.keyword].push(params.data);
+    if (params.sort) {
+      Data.trendPosts[data.keyword].sort(function(a,b){
+        return a[params.sort] - b[params.sort];
+      });
+    }
+    /*if(this[params.type][data.keyword].length > 10){
+      Data.trendPosts[data.keyword].splice(10, 1);
+    }*/
+  },
+   
   /*
     Finds popular words for given blob of text.
     Sorts by frequency.  No duplicates.
     Ignores words in stopWords array.
   */
-
-  mergeKeywordData: function(data, id, likes, comments, shares, message){
-    if(!Data.trendPosts.hasOwnProperty(data.keyword)){
-      Data.trendPosts[data.keyword] = [];
-    }
-    Data.trendPosts[data.keyword].push({
-      message: message,
-      avgEng: data.avgEng, //Heyo Points
-      likes: likes,
-      url: "http://facebook.com/" + id,
-      comments: comments,
-      shares: shares
-    });
-    Data.trendPosts[data.keyword].sort(function(a,b){
-      return a.avgEng - b.avgEng;
-    });
-    if(Data.trendPosts[data.keyword].length > 10){
-      Data.trendPosts[data.keyword].splice(10, 1);
-    }
-  },
-   
   sortText:function(text){  
     var mKeys = [];
     var found = false;
@@ -492,7 +323,7 @@ Data = {
                     keys[k].indexOf('www') != -1;
                     
         if (cases) continue;
-        
+                
         
         // Increment key if already exists.
         for (i in mKeys) {

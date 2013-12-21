@@ -101,7 +101,6 @@ $(document).on('click', '#getPosts', function(){
                 objIds.push(objects[i].id);
                 
                 if (i >= objLimit) {
-                    Request
                     break;
                 }
             }
