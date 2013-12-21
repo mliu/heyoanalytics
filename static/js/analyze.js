@@ -74,20 +74,21 @@ var Trending = {
 
   merge: function(data){
     console.log("merging");
-    for(obj in data){
+    /*for(obj in data){
       var o = data[obj];
       if(obj > 0){
         if(o.trendVal == this.finalKeys[this.finalKeys.length-1].trendVal){
+                                                                      //why are you doing this?
           this.finalKeys[this.finalKeys.length-1].keyword += " " + o.keyword;
         }else{
           this.finalKeys.push(o);
-          this.finalKeys[this.finalKeys.length-1].oKey = o.keyword;
+          this.finalKeys[this.finalKeys.length-1].oKey = o.keyword;   //why save this value twice?
         }
       }else if(obj == 0){
-        this.finalKeys.push(o);
+        this.finalKeys.push(o);                                       //repeating code
         this.finalKeys[this.finalKeys.length-1].oKey = o.keyword;
       }
-    }
+    }*/
   },
 
   //Compiles all posts from pages with a certain keyword and returns a
@@ -97,26 +98,33 @@ var Trending = {
   get: function(data, callback){
     var temp = {};
         
-    console.log(data);
+    //console.log(data);
     //each page
     for(obj in data){     
       
-      var o = data[obj];    
+      var o = data[obj];
+      
+      if (o.paging) {
+        var id = Trending.getLikes(o.paging.next, function(id, totalLikes){
+          Trending.IDs[id] = totalLikes;
+        }, callback);
+      }
+      
       //each post
       for(post in data[obj].data){    
         
         var p = data[obj].data[post];
         
         if(p.hasOwnProperty("message")){    
-          arr = Data.popularKeys([p]).posts;
+          words = Data.popularKeys([p]).posts;
           
           var likes = p.likes ? p.likes.summary.total_count : 0,
               comments = p.comments ? p.comments.summary.total_count : 0,
               shares = p.shares ? p.shares.count : 0;
           
-          if(!arr) continue;
+          if(!words) continue;
           //each word
-          arr.forEach(function(w){
+          words.forEach(function(w){
             var word = w[0];
             var index = Trending.keyExists(word);   
             if(index >= 0){
@@ -133,16 +141,13 @@ var Trending = {
               temp = {
                 keyword : word,
                 trendVal : Trending.trendVal(p.created_time),
-                count : 1,
+                count : 0, 
                 avgEng : 0,
                 totalReception : likes + comments + shares,
               }
               Trending.keys.push(temp);
             }
             
-            var id = Trending.getLikes(o.paging.next, function(id, totalLikes){
-              Trending.IDs[id] = totalLikes;
-            }, callback);
             var data = {
                       message: p.message,
                       avgEng: temp.avgEng, //Heyo Points
@@ -151,22 +156,38 @@ var Trending = {
                       comments: comments,
                       shares: shares
                     };
-            Data.save({type:'posts', data:data, keyword:word, sort:avgEng});
+            // save post for keyword.
+            Data.save({type:'posts', data:data, keyword:word, sort:'avgEng'});
           });
           
           
         }
       }
     }
-    return this.sort();
+    return this.sort({by:'trendVal', reverse:false});
   },
   
-  sort: function(){
-    this.keys.sort(function(a,b){
-      return b.trendVal - a.trendVal;
-    });
-    this.merge(this.keys);
-    return this.finalKeys;
+  /*
+    Sorts the existing keys.
+    
+    @param by - string indicating what attribute to sort by.
+                Must be a number.
+    @param reverse - bool to switch sort order.
+  */
+  sort: function(params){
+    params = params || {};
+    if (params.reverse) {
+      this.keys.sort(function(b,a){
+        return b[params.by] - a[params.by];
+      });
+    }else{
+      this.keys.sort(function(a,b){
+        return b[params.by] - a[params.by];
+      });
+    }
+    //this.merge(this.keys);
+    //return this.finalKeys;
+    return this.keys;
   }
 };
 
@@ -192,9 +213,8 @@ var Request = {
         callback(res.data);
     }else{
       var url = '/search?q=' + params.query + '&type='+params.object;
-      if (params.object == 'page') {
-        url += '&fields=best_page';
-      }
+      if (params.object == 'page') url += '&fields=best_page';
+      
       FB.api(url, function(res){
 
         Request.keys[params.query] = res.data;
@@ -227,7 +247,7 @@ var Request = {
     
     //FQL query for getting all posts and specific fields
     FB.api(url, function(res){
-      //Request.IDs[params.id] = res.data;
+      Request.IDs[params.id] = res.data;
       callback(Request.IDs[params.id]);
     });
   },//end pullbyid
@@ -280,20 +300,28 @@ Data = {
     @param sort: indicate a value in data to sort by - value
     
   */
+  testwords:[],
+  testfreq:{},
   save: function(params){
     params = params || {};
+    if (params.keyword && this.testwords.indexOf(params.keyword) != -1) {
+        this.testfreq[params.keyword].freq++;
+    }else{
+      this.testwords.indexOf(params.keyword);
+      this.testfreq[params.keyword] = {freq:0};
+    }
     if (!this[params.type]) {
       if (!params.type) {
         console.log('Error: no data type given for data.save().'); return;
       }
       this[params.type] = {};
     }
-    if(!this[params.type].data.keyword){
-      this[params.type][data.keyword] = [];
+    if(!this[params.type].keyword){
+      this[params.type][params.keyword] = [];
     }
-    this[params.type][data.keyword].push(params.data);
+    this[params.type][params.keyword].push(params.data);
     if (params.sort) {
-      Data.trendPosts[data.keyword].sort(function(a,b){
+      Data[params.type][params.keyword].sort(function(a,b){
         return a[params.sort] - b[params.sort];
       });
     }
@@ -304,12 +332,13 @@ Data = {
    
   /*
     Finds popular words for given blob of text.
-    Sorts by frequency.  No duplicates.
+    Sorts by frequency by disabling duplicate variable.
     Ignores words in stopWords array.
   */
   sortText:function(text){  
     var mKeys = [];
     var found = false;
+    var duplicates = true;
     //console.log('text',text);
       
       var keys = text.split(' ');
@@ -326,15 +355,18 @@ Data = {
                 
         
         // Increment key if already exists.
-        for (i in mKeys) {
-          if (mKeys[i][0] == keys[k]) {
-            mKeys[i][1]++;
-            var found = true;
-            break;
+        if (!duplicates) {
+    
+          for (i in mKeys) {
+            if (mKeys[i][0] == keys[k]) {
+              mKeys[i][1]++;
+              var found = true;
+              break;
+            }
           }
         }
         // add key if it doesn't
-        if (!found){
+        if (!found && duplicates){
           var tuple = [keys[k], 1];
           mKeys.push(tuple);
         }else{

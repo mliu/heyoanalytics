@@ -137,7 +137,7 @@ var UI = {
     pOptions = pOptions || { white: true };
     //Set this to correct path.
     var oKey = key;
-    var postArray = Data.trendPosts;
+    var postArray = Data.posts;
     
     if (!postArray[oKey]) {
       console.log('key doesn\'t exist');
@@ -155,7 +155,7 @@ var UI = {
       var url = postArray[oKey][i].url,
           url = url ? url : '#';
       var html = '<tr class="trendPost">' +
-                    '<td><a href="'+ url+'"><strong>' + message + '</strong></a></td>' +
+                    '<td><a href="'+ url+'" target="_blank"><strong>' + message + '</strong></a></td>' +
                     '<td class="comments"> ' + comments + ' </td>' +
                     '<td class="likes"> ' + likes + ' </td>' +
                   '</tr>';
@@ -171,9 +171,9 @@ var UI = {
     var trends = [];
     for (var i = 0; i <6; i++){
       trends.push({keyword: 'test'+i, avgEng:i, trendVal:Math.floor(Math.random() * 150)});
-      Data.trendPosts['test'+i] = [];
+      Data.posts['test'+i] = [];
         for (var n=0; n<5; n++){
-          Data.trendPosts['test'+i].push( {
+          Data.posts['test'+i].push( {
             message: 'a message for test'+i+' and post'+n,
             like_count:Math.floor(Math.random() * 250),
             comment_count:Math.floor(Math.random() * 50)

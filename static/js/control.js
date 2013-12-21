@@ -9,10 +9,12 @@ $(document).on('click', '.page', function(){
     var id = this.id.replace('page', '');
     var since = Math.floor((new Date().getTime() - 1000*60*60*24*days)/1000);
     UI.loading({message: 'Checking your pages . . .'});
+
     Request.pullByID({id:id, since:since}, function(data){
         UI.loaded();
         var limit = 3;
         var keys = Data.popularKeys(data);
+        
         UI.clearKeyWords();
         if (!keys.posts.length) {
             if (!keys.comments.length) {
@@ -24,7 +26,7 @@ $(document).on('click', '.page', function(){
         console.log('popular words for posts are');
         for (i in keys.posts) {
             console.log(keys.posts[i][1], keys.posts[i][0]);
-            Data.stopWords.push(keys.posts[i][0]);
+            //Data.stopWords.push(keys.posts[i][0]);
             UI.addKeyWord(keys.posts[i][0]);
             if (i >= limit) break;
         }
@@ -110,11 +112,12 @@ $(document).on('click', '#getPosts', function(){
                 UI.loading({message:'Waiting for last bits of data'});
                 console.log('got batch back ', data);
                 lastbatch = data;
-                PublicTrending.getTrending(data, function(keys, ids){
+                Trending.get(data, function(keys, ids){
                     UI.loaded();
-                    
+                    UI.clearTrends();
                     console.log('keys: ', keys);
                     console.log('ids ', ids);
+                    console.log('testing words', Data.testfreq);
                     UI.addTrends({trends:keys});
                 });
             });
